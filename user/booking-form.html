@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Booking · Elite Blue</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b1a2e, #132b3f);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #e4f0ff;
+        }
+
+        .form-card {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(12, 27, 44, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid #3f9eff40;
+            border-radius: 3rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 30px 50px -20px #000, 0 0 0 1px #3f9eff20 inset;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(130deg, #b3dcff, #6eb7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            border-left: 5px solid #3f9eff;
+            padding-left: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #b3d9ff;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: #1e334d;
+            border: 2px solid #2f5480;
+            border-radius: 2rem;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3f9eff;
+            box-shadow: 0 0 15px #3f9eff;
+        }
+
+        .map-container {
+            height: 250px;
+            border-radius: 2rem;
+            overflow: hidden;
+            border: 2px solid #2f5480;
+            margin: 1rem 0;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .location-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .location-actions button {
+            background: #0050b3;
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            border: 1px solid #7bb2ff;
+        }
+
+        .location-actions button:hover {
+            background: #1a6fd0;
+            box-shadow: 0 0 20px #3f9eff;
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .row .form-group {
+            flex: 1 1 200px;
+        }
+
+        .otp-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .otp-group input {
+            flex: 1;
+        }
+
+        .otp-group button {
+            background: #0050b3;
+            border: none;
+            color: white;
+            padding: 0 2rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #7bb2ff;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            background: linear-gradient(125deg, #0050b3, #003d80);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            padding: 1.2rem;
+            border-radius: 4rem;
+            cursor: pointer;
+            margin-top: 2rem;
+            box-shadow: 0 10px 18px -6px #001a33, 0 0 0 1px #3d9eff inset;
+            transition: 0.2s;
+        }
+
+        .btn-confirm:hover {
+            background: linear-gradient(125deg, #1a6fd0, #0050b0);
+            transform: scale(1.02);
+            box-shadow: 0 15px 25px -6px #000f2e, 0 0 0 2px #9acdff inset;
+        }
+
+        .back-link {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .back-link a {
+            color: #b3d9ff;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px dashed #3f9eff;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <h2>📋 Complete your booking</h2>
+        <form id="bookingForm">
+            <!-- hidden worker id and rate -->
+            <input type="hidden" id="workerId" name="workerId">
+            <input type="hidden" id="workerRate" name="workerRate">
+
+            <div class="row">
+                <div class="form-group">
+                    <label>📅 Preferred date</label>
+                    <input type="date" id="date" required min="">
+                </div>
+                <div class="form-group">
+                    <label>⏰ Time slot</label>
+                    <select id="timeSlot" required>
+                        <option value="">Select time</option>
+                        <option value="09:00-11:00">09:00 – 11:00</option>
+                        <option value="11:00-13:00">11:00 – 13:00</option>
+                        <option value="13:00-15:00">13:00 – 15:00</option>
+                        <option value="15:00-17:00">15:00 – 17:00</option>
+                        <option value="17:00-19:00">17:00 – 19:00</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📍 Service location (click map to set)</label>
+                <div class="map-container" id="map"></div>
+                <div class="location-actions">
+                    <button type="button" id="getCurrentLocation">📍 Use my current location</button>
+                </div>
+                <input type="text" id="locationAddress" placeholder="Selected address will appear here" readonly style="margin-top: 1rem;">
+            </div>
+
+            <div class="form-group">
+                <label>🔑 OTP verification</label>
+                <div class="otp-group">
+                    <input type="text" id="otp" placeholder="Enter OTP" required>
+                    <button type="button" id="sendOtpBtn">Send OTP</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-confirm">✅ Confirm & send request</button>
+        </form>
+        <div class="back-link">
+            <a href="dashboard.html">← Back to dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Get workerId from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const workerId = urlParams.get('workerId');
+            const rate = urlParams.get('rate') || 200;
+            if (!workerId) {
+                alert('No worker selected. Redirecting...');
+                window.location.href = 'book.html';
+                return;
+            }
+            document.getElementById('workerId').value = workerId;
+            document.getElementById('workerRate').value = rate;
+
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').min = today;
+
+            // OTP simulation
+            let generatedOtp = null;
+            document.getElementById('sendOtpBtn').addEventListener('click', function() {
+                generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                alert(`OTP sent: ${generatedOtp} (mock)`);
+            });
+
+            // Map setup (OpenStreetMap via Leaflet)
+            const map = L.map('map').setView([20.5937, 78.9629], 5); // default India
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            let marker = null;
+            let selectedLatLng = null;
+
+            // On map click, set marker
+            map.on('click', function(e) {
+                if (marker) map.removeLayer(marker);
+                marker = L.marker(e.latlng).addTo(map);
+                selectedLatLng = e.latlng;
+                // Reverse geocode to get address (simple using Nominatim)
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const address = data.display_name || 'Selected location';
+                        document.getElementById('locationAddress').value = address;
+                    })
+                    .catch(() => {
+                        document.getElementById('locationAddress').value = `${e.latlng.lat}, ${e.latlng.lng}`;
+                    });
+            });
+
+            // Get current location
+            document.getElementById('getCurrentLocation').addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            map.setView([lat, lng], 15);
+                            if (marker) map.removeLayer(marker);
+                            marker = L.marker([lat, lng]).addTo(map);
+                            selectedLatLng = { lat, lng };
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    document.getElementById('locationAddress').value = data.display_name || 'Current location';
+                                })
+                                .catch(() => {
+                                    document.getElementById('locationAddress').value = `${lat}, ${lng}`;
+                                });
+                        },
+                        (error) => {
+                            alert('Unable to retrieve location. Please click on map.');
+                        }
+                    );
+                } else {
+                    alert('Geolocation not supported. Please click on map.');
+                }
+            });
+
+            // Form submission
+            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const otpInput = document.getElementById('otp').value;
+                if (otpInput !== generatedOtp) {
+                    alert('Invalid OTP. Please request OTP and try again.');
+                    return;
+                }
+
+                if (!selectedLatLng) {
+                    alert('Please select a location on the map.');
+                    return;
+                }
+
+                const date = document.getElementById('date').value;
+                const timeSlot = document.getElementById('timeSlot').value;
+                const address = document.getElementById('locationAddress').value;
+                const workerIdVal = document.getElementById('workerId').value;
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Create booking object with extra fields
+                const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                const newBooking = {
+                    id: Date.now(),
+                    userId: currentUser.email,
+                    workerId: parseInt(workerIdVal) || workerIdVal,
+                    status: 'pending',
+                    rate: parseInt(rate),
+                    createdAt: new Date().toISOString(),
+                    date: date,
+                    timeSlot: timeSlot,
+                    location: {
+                        lat: selectedLatLng.lat,
+                        lng: selectedLatLng.lng,
+                        address: address
+                    }
+                };
+                bookings.push(newBooking);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+
+                // Also create a payment record (optional)
+                const payments = JSON.parse(localStorage.getItem('payments') || '[]');
+                payments.push({
+                    id: Date.now() + 1,
+                    bookingId: newBooking.id,
+                    userId: currentUser.email,
+                    workerId: newBooking.workerId,
+                    amount: rate, // placeholder
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                });
+                localStorage.setItem('payments', JSON.stringify(payments));
+
+                alert('✅ Booking request sent to worker!');
+                window.location.href = 'dashboard.html';
+            });
+        })();
+    </script>
+</body>
+</html>

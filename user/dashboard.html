@@ -190,54 +190,50 @@
             transform: scale(1.02);
         }
 
-        .action-strip {
+        /* Tabs */
+        .tabs {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
             margin-bottom: 2rem;
-            align-items: center;
+            flex-wrap: wrap;
         }
-
-        .premium-btn {
-            background: linear-gradient(145deg, #2d2a23, #1f1c14);
+        .tab-btn {
+            background: rgba(18, 18, 24, 0.7);
+            backdrop-filter: blur(12px);
             border: 2px solid #a89058;
             color: #f5e7c8;
             font-weight: 600;
-            padding: 0.8rem 2rem;
+            padding: 0.8rem 2.5rem;
             border-radius: 3rem;
             cursor: pointer;
-            box-shadow: 0 0 15px #927f40, 0 5px 10px #00000080;
-            backdrop-filter: blur(8px);
+            box-shadow: 0 0 15px #927f40;
             transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-        }
-
-        .premium-btn:hover {
-            background: linear-gradient(145deg, #4a3f2b, #2f281b);
-            border-color: #e5c468;
-            box-shadow: 0 0 30px #e5b73b, 0 8px 18px black;
-            transform: scale(1.02);
-            color: #fff2d2;
-        }
-
-        .services-section {
-            margin-bottom: 3rem;
-        }
-        .section-heading {
-            font-size: 2.2rem;
-            font-weight: 600;
-            margin: 2rem 0 1.5rem 0;
-            background: linear-gradient(135deg, #fff2cf, #e0c06b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
+        .tab-btn.active {
+            background: #dbb35c;
+            color: #0a0804;
+            border-color: #ffea9e;
+            box-shadow: 0 0 30px #ffbf00;
+        }
+        .tab-btn:hover {
+            background: #c9a459;
+            color: #0a0701;
+            border-color: #ffd877;
+            box-shadow: 0 0 25px #fcb42e;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Services grid (same as before) */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -342,27 +338,26 @@
             box-shadow: 0 0 30px #ffbf00;
         }
 
-        .dashboard-grid {
+        /* Dashboard layout with right column */
+        .main-with-side {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 380px;
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-top: 1rem;
         }
 
-        .card {
+        .left-panel {
+            min-width: 0;
+        }
+
+        .right-panel .card {
             background: rgba(18, 18, 24, 0.6);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(212, 175, 55, 0.4);
             border-radius: 2.5rem;
             padding: 2rem 1.8rem;
             box-shadow: 0 20px 40px -12px black, 0 0 0 1px rgba(255, 215, 0, 0.2) inset, 0 0 30px #ffd70015;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .card:hover {
-            border-color: #d4af37aa;
-            box-shadow: 0 30px 60px -15px black, 0 0 0 1px #ffe066 inset, 0 0 40px #ffd70040;
+            animation: goldPulse 6s infinite ease-in-out;
         }
 
         .card h3 {
@@ -478,6 +473,9 @@
             font-size: 0.9rem;
             letter-spacing: 0.3px;
             margin: 0.25rem 0.5rem 0.25rem 0;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
         button:hover, .btn:hover {
@@ -488,15 +486,18 @@
             transform: scale(1.02);
         }
 
-        .full-width-section {
-            grid-column: 1 / -1;
-            margin-top: 1rem;
+        .filter-hint {
+            color: #ffdb7c;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            font-style: italic;
         }
-
-        @media (max-width: 900px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+        .clear-filter {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #ffd966;
+            text-decoration: underline;
         }
 
         @keyframes goldPulse {
@@ -505,15 +506,10 @@
             100% { border-color: rgba(212, 175, 55, 0.4); }
         }
 
-        .card {
-            animation: goldPulse 6s infinite ease-in-out;
-        }
-        .filter-hint {
-            color: #ffdb7c;
-            font-size: 0.9rem;
-            margin-top: -0.5rem;
-            margin-bottom: 1rem;
-            font-style: italic;
+        @media (max-width: 900px) {
+            .main-with-side {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -533,39 +529,39 @@
         </div>
     </div>
 
-    <!-- quick action strip -->
-    <div class="action-strip">
-        <button class="premium-btn" onclick="window.location.href='book.html'">📅 Book a Worker (legacy)</button>
+    <!-- Tabs navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tabServices"><i class="fa-regular fa-grid-2"></i> Services</button>
+        <button class="tab-btn" id="tabWorkers"><i class="fa-solid fa-briefcase"></i> Workers</button>
+        <button class="tab-btn" id="tabBookings"><i class="fa-regular fa-calendar"></i> My Bookings</button>
     </div>
 
-    <!-- Available Services Section with grid (expanded) -->
-    <div class="services-section">
-        <h1 class="section-heading"><i class="fa-regular fa-grid-2"></i> Available Services</h1>
-        <div class="services-grid" id="servicesGrid"></div>
-        <div class="more-btn-container">
-            <button class="more-btn" id="toggleMoreBtn"><i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i></button>
-        </div>
-    </div>
+    <!-- Main area with left panel (tab content) and right panel (completed jobs) -->
+    <div class="main-with-side">
+        <div class="left-panel">
+            <!-- Services Tab -->
+            <div id="servicesTab" class="tab-content active">
+                <div class="services-grid" id="servicesGrid"></div>
+                <div class="more-btn-container">
+                    <button class="more-btn" id="toggleMoreBtn"><i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i></button>
+                </div>
+            </div>
 
-    <!-- main grid: left column (available workers + bookings) and right column (completed jobs) -->
-    <div class="dashboard-grid">
-        <!-- left column: workers and my bookings -->
-        <div class="left-col">
-            <div class="card">
-                <h3>🛠️ Available Workers</h3>
+            <!-- Workers Tab -->
+            <div id="workersTab" class="tab-content">
                 <div id="filterHint" class="filter-hint"></div>
                 <div id="workersList"></div>
             </div>
 
-            <div class="card" style="margin-top: 2rem;">
-                <h3>📋 My Bookings</h3>
+            <!-- My Bookings Tab -->
+            <div id="bookingsTab" class="tab-content">
                 <div id="bookingsList"></div>
             </div>
         </div>
 
-        <!-- right column: completed jobs -->
-        <div class="right-col">
-            <div class="card full-width-section" style="height: fit-content;">
+        <!-- Right panel: Completed Jobs (always visible) -->
+        <div class="right-panel">
+            <div class="card">
                 <h3>✅ Completed Jobs – Action Required</h3>
                 <div id="completedJobs"></div>
             </div>
@@ -579,7 +575,6 @@
         const emergencyBtn = document.getElementById('emergencyBtn');
         emergencyBtn.addEventListener('click', () => {
             document.body.classList.toggle('emergency-mode');
-            // Change button icon/text
             if (document.body.classList.contains('emergency-mode')) {
                 emergencyBtn.innerHTML = '<i class="fa-solid fa-shield"></i> NORMAL MODE';
             } else {
@@ -606,7 +601,6 @@
             { id: 8, name: 'Karan', email: 'karan@example.com', role: 'Refrigerator Repair', experience: 4, rate: 230 },
             { id: 9, name: 'Priya', email: 'priya@example.com', role: 'Washing Machine Repair', experience: 3, rate: 200 },
             { id: 10, name: 'Suresh', email: 'suresh@example.com', role: 'RO Water Purifier Service', experience: 4, rate: 190 },
-            // NEW WORKERS FOR ADDED SERVICES
             { id: 11, name: 'Anita', email: 'anita@example.com', role: 'Tutor', experience: 5, rate: 300 },
             { id: 12, name: 'Sanjay', email: 'sanjay@example.com', role: 'Chef', experience: 8, rate: 400 },
             { id: 13, name: 'Hari', email: 'hari@example.com', role: 'Gardener', experience: 6, rate: 180 },
@@ -618,7 +612,6 @@
         ];
         localStorage.setItem('workers', JSON.stringify(workers));
 
-        // Find logged in worker
         const loggedInWorker = workers.find(w => w.email === currentUser.email);
         document.getElementById('userName').innerText = loggedInWorker?.name || currentUser.email;
         document.getElementById('userEmail').innerText = loggedInWorker ? `(${currentUser.email})` : '';
@@ -635,7 +628,6 @@
             { id: 8, name: 'Refrigerator Repair', icon: 'fa-solid fa-temperature-low', desc: 'Cooling issues, gas leak.' },
             { id: 9, name: 'Washing Machine Repair', icon: 'fa-solid fa-soap', desc: 'Not spinning, leakage, drain.' },
             { id: 10, name: 'RO Water Purifier', icon: 'fa-solid fa-droplet', desc: 'Filter change, tank cleaning.' },
-            // NEW SERVICES
             { id: 11, name: 'Tutor', icon: 'fa-solid fa-chalkboard-user', desc: 'Home tutoring for all subjects.' },
             { id: 12, name: 'Chef', icon: 'fa-solid fa-utensils', desc: 'Private chef for events or daily meals.' },
             { id: 13, name: 'Gardener', icon: 'fa-solid fa-leaf', desc: 'Lawn mowing, plant care, landscaping.' },
@@ -646,17 +638,47 @@
             { id: 18, name: 'Load Man', icon: 'fa-solid fa-dolly', desc: 'Loading/unloading, shifting help.' }
         ];
 
-        // Render service grid (first 9 visible, rest hidden initially)
-        const grid = document.getElementById('servicesGrid');
-        function renderServices(showAll = false) {
+        // ---------- TAB SWITCHING ----------
+        const tabServices = document.getElementById('tabServices');
+        const tabWorkers = document.getElementById('tabWorkers');
+        const tabBookings = document.getElementById('tabBookings');
+        const servicesTab = document.getElementById('servicesTab');
+        const workersTab = document.getElementById('workersTab');
+        const bookingsTab = document.getElementById('bookingsTab');
+
+        function setActiveTab(tabId) {
+            [tabServices, tabWorkers, tabBookings].forEach(btn => btn.classList.remove('active'));
+            [servicesTab, workersTab, bookingsTab].forEach(tab => tab.classList.remove('active'));
+
+            if (tabId === 'services') {
+                tabServices.classList.add('active');
+                servicesTab.classList.add('active');
+                renderServicesTab();
+            } else if (tabId === 'workers') {
+                tabWorkers.classList.add('active');
+                workersTab.classList.add('active');
+                renderWorkersTab(currentServiceFilter);
+            } else if (tabId === 'bookings') {
+                tabBookings.classList.add('active');
+                bookingsTab.classList.add('active');
+                renderBookingsTab();
+            }
+        }
+
+        tabServices.addEventListener('click', () => setActiveTab('services'));
+        tabWorkers.addEventListener('click', () => setActiveTab('workers'));
+        tabBookings.addEventListener('click', () => setActiveTab('bookings'));
+
+        // ---------- SERVICES TAB RENDERING ----------
+        function renderServicesTab() {
+            const grid = document.getElementById('servicesGrid');
             grid.innerHTML = '';
             services.forEach((s, idx) => {
                 const card = document.createElement('div');
                 card.className = 'service-card';
-                // Show first 9 by default (adjust as needed)
-                if (idx >= 9) {
+                if (idx >= 8) {
                     card.classList.add('extra-service');
-                    if (!showAll) card.classList.add('hidden-service');
+                    if (!showingAll) card.classList.add('hidden-service');
                 }
                 card.innerHTML = `
                     <div class="icon-wrapper"><i class="${s.icon}"></i></div>
@@ -667,32 +689,32 @@
                 grid.appendChild(card);
             });
         }
-        renderServices(false);
 
-        // Toggle more/less services
-        const toggleBtn = document.getElementById('toggleMoreBtn');
         let showingAll = false;
-        toggleBtn.addEventListener('click', () => {
+        document.getElementById('toggleMoreBtn').addEventListener('click', () => {
             showingAll = !showingAll;
             document.querySelectorAll('.extra-service').forEach(c => c.classList.toggle('hidden-service', !showingAll));
-            toggleBtn.innerHTML = showingAll ?
+            const btn = document.getElementById('toggleMoreBtn');
+            btn.innerHTML = showingAll ?
                 '<i class="fa-regular fa-circle-minus"></i> Show fewer services <i class="fa-regular fa-arrow-up"></i>' :
                 '<i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i>';
         });
 
-        // ---------- FILTER WORKERS BY ROLE (based on service click) ----------
-        const workersDiv = document.getElementById('workersList');
-        const filterHint = document.getElementById('filterHint');
+        // ---------- WORKERS TAB WITH FILTER ----------
+        let currentServiceFilter = null;
 
-        function displayWorkers(roleFilter = null) {
+        function renderWorkersTab(roleFilter = null) {
+            const workersDiv = document.getElementById('workersList');
+            const filterHint = document.getElementById('filterHint');
             let filtered = workers;
             let hintText = '';
+
             if (roleFilter) {
                 const lowerRole = roleFilter.trim().toLowerCase();
-                // Try to match role exactly or partially (e.g., "AC Mechanic" matches "AC Mechanic")
                 filtered = workers.filter(w => w.role.toLowerCase().includes(lowerRole) || w.role.toLowerCase() === lowerRole);
                 hintText = `Showing workers for <strong>${roleFilter}</strong> `;
                 if (filtered.length === 0) hintText += ' (none available)';
+                hintText += `<span class="clear-filter" id="clearFilter">✕ clear filter</span>`;
             } else {
                 hintText = 'All available workers';
             }
@@ -707,44 +729,94 @@
                 <div class="worker-card">
                     <strong>${w.name}</strong> - ${w.role} (${w.experience} yrs)<br>
                     Rate: ₹${w.rate}/hr<br>
-                    <button onclick="bookWorker(${w.id})">Book</button>
+                    <a href="booking-form.html?workerId=${w.id}" class="btn">Book</a>
                 </div>
             `).join('');
+
+            const clearEl = document.getElementById('clearFilter');
+            if (clearEl) {
+                clearEl.addEventListener('click', () => {
+                    currentServiceFilter = null;
+                    renderWorkersTab();
+                });
+            }
         }
 
-        // Initial: show all workers
-        displayWorkers();
-
-        // Attach service book buttons click via delegation
-        document.getElementById('servicesGrid').addEventListener('click', (e) => {
+        // Handle service "Book Now" clicks – switch to workers tab and filter
+        document.addEventListener('click', (e) => {
             const btn = e.target.closest('.book-now-btn');
             if (!btn) return;
             const serviceName = btn.dataset.service;
-            displayWorkers(serviceName);
-            document.querySelector('.left-col').scrollIntoView({ behavior: 'smooth' });
+            if (serviceName) {
+                currentServiceFilter = serviceName;
+                setActiveTab('workers');
+            }
         });
 
-        // ---------- EXISTING BOOKINGS / PAYMENTS / FEEDBACK CODE (preserved) ----------
-        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
-        const payments = JSON.parse(localStorage.getItem('payments') || '[]').filter(p => p.userId === currentUser.email);
-        const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+        // ---------- MY BOOKINGS TAB RENDERING ----------
+        function renderBookingsTab() {
+            const bookingsDiv = document.getElementById('bookingsList');
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
 
-        function getPaymentForBooking(bookingId) {
-            return payments.find(p => p.bookingId === bookingId);
+            if (bookings.length === 0) {
+                bookingsDiv.innerHTML = '<p>No bookings yet.</p>';
+                return;
+            }
+
+            bookingsDiv.innerHTML = bookings.map(b => {
+                const worker = workers.find(w => w.id === b.workerId);
+                let statusClass = '';
+                if (b.status === 'pending') statusClass = 'badge-pending';
+                else if (b.status === 'completed') statusClass = 'badge-completed';
+                else if (b.status === 'in_progress') statusClass = 'badge-paid';
+                let action = '';
+                if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
+                    action = `<a href="track.html?bookingId=${b.id}"><button>Track</button></a>`;
+                }
+                let otpButton = '';
+                let otpDisplay = '';
+                if (b.status === 'arrived') {
+                    if (!b.otp) {
+                        otpButton = `<button onclick="generateOtp(${b.id})">Generate OTP</button>`;
+                    } else {
+                        otpDisplay = `<p><strong>OTP:</strong> ${b.otp}</p>`;
+                    }
+                }
+                return `
+                    <div class="booking-card">
+                        <strong>ID:</strong> ${b.id}<br>
+                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId}<br>
+                        <strong>Status:</strong> <span class="badge ${statusClass}">${b.status}</span><br>
+                        ${otpDisplay}
+                        ${action} ${otpButton}
+                    </div>
+                `;
+            }).join('');
         }
 
-        function feedbackExists(bookingId) {
-            return feedbacks.some(f => f.bookingId === bookingId);
-        }
+        // ---------- COMPLETED JOBS (right panel) – unchanged from original ----------
+        function renderCompletedJobs() {
+            const completedDiv = document.getElementById('completedJobs');
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
+            const payments = JSON.parse(localStorage.getItem('payments') || '[]').filter(p => p.userId === currentUser.email);
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
 
-        // --- COMPLETED JOBS ---
-        const completedJobsDiv = document.getElementById('completedJobs');
-        const completedBookings = bookings.filter(b => b.status === 'completed');
+            function getPaymentForBooking(bookingId) {
+                return payments.find(p => p.bookingId === bookingId);
+            }
 
-        if (completedBookings.length === 0) {
-            completedJobsDiv.innerHTML = '<p style="padding:1rem;">No completed jobs yet.</p>';
-        } else {
-            completedJobsDiv.innerHTML = completedBookings.map(b => {
+            function feedbackExists(bookingId) {
+                return feedbacks.some(f => f.bookingId === bookingId);
+            }
+
+            const completedBookings = bookings.filter(b => b.status === 'completed');
+
+            if (completedBookings.length === 0) {
+                completedDiv.innerHTML = '<p style="padding:1rem;">No completed jobs yet.</p>';
+                return;
+            }
+
+            completedDiv.innerHTML = completedBookings.map(b => {
                 const worker = workers.find(w => w.id === b.workerId);
                 const payment = getPaymentForBooking(b.id);
                 const alreadyFeedback = feedbackExists(b.id);
@@ -840,59 +912,16 @@
             });
         }
 
-        // --- MY BOOKINGS ---
-        const bookingsDiv = document.getElementById('bookingsList');
-        if (bookings.length === 0) {
-            bookingsDiv.innerHTML = '<p>No bookings yet.</p>';
-        } else {
-            bookingsDiv.innerHTML = bookings.map(b => {
-                const worker = workers.find(w => w.id === b.workerId);
-                let statusClass = '';
-                if (b.status === 'pending') statusClass = 'badge-pending';
-                else if (b.status === 'completed') statusClass = 'badge-completed';
-                else if (b.status === 'in_progress') statusClass = 'badge-paid';
-                let action = '';
-                if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
-                    action = `<a href="track.html?bookingId=${b.id}"><button>Track</button></a>`;
-                }
-                let otpButton = '';
-                let otpDisplay = '';
-                if (b.status === 'arrived') {
-                    if (!b.otp) {
-                        otpButton = `<button onclick="generateOtp(${b.id})">Generate OTP</button>`;
-                    } else {
-                        otpDisplay = `<p><strong>OTP:</strong> ${b.otp}</p>`;
-                    }
-                }
-                return `
-                    <div class="booking-card">
-                        <strong>ID:</strong> ${b.id}<br>
-                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId}<br>
-                        <strong>Status:</strong> <span class="badge ${statusClass}">${b.status}</span><br>
-                        ${otpDisplay}
-                        ${action} ${otpButton}
-                    </div>
-                `;
-            }).join('');
-        }
+        // ---------- INITIAL RENDER ----------
+        renderServicesTab();
+        renderWorkersTab(); // show all workers initially
+        renderBookingsTab();
+        renderCompletedJobs();
 
-        // ---------- GLOBAL FUNCTIONS ----------
-        window.bookWorker = function(workerId) {
-            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            const newBooking = {
-                id: Date.now(),
-                userId: currentUser.email,
-                workerId: workerId,
-                status: 'pending',
-                rate: 200,
-                createdAt: new Date().toISOString()
-            };
-            bookings.push(newBooking);
-            localStorage.setItem('bookings', JSON.stringify(bookings));
-            alert('Booking sent to worker!');
-            window.location.reload();
-        };
+        // Also re-render completed jobs when anything changes (e.g., after payment)
+        // But we can keep it simple; page reloads handle updates.
 
+        // ---------- GLOBAL FUNCTIONS (OTP, logout) ----------
         window.generateOtp = function(bookingId) {
             const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
             const index = bookings.findIndex(b => b.id === bookingId);
