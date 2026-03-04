@@ -194,6 +194,8 @@
     </div>
 
     <script>
+        const API = "http://localhost:5000/api";
+
         let generatedOtp;
 
         document.getElementById('sendOtp').onclick = function () {
@@ -201,15 +203,12 @@
             alert(`OTP sent: ${generatedOtp} (mock)`);
         };
 
-        document.getElementById('signupForm').onsubmit = function (e) {
+        document.getElementById('signupForm').onsubmit = async function (e) {
             e.preventDefault();
 
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const aadhar = document.getElementById('aadhar').value;
-            const role = document.getElementById('role').value;  // from dropdown
-            const experience = document.getElementById('experience').value;
             const otp = document.getElementById('otp').value;
 
             if (otp !== generatedOtp) {
@@ -217,29 +216,30 @@
                 return;
             }
 
-            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+            try {
+                const res = await fetch(API + "/auth/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password,
+                        role: "worker"
+                    })
+                });
 
-            if (workers.find(w => w.email === email)) {
-                alert('Worker already exists');
-                return;
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || "Signup failed");
+                    return;
+                }
+
+                alert("Account created successfully! Please login.");
+                window.location.href = "login.html";
+            } catch (err) {
+                alert("Server error");
             }
-
-            const newWorker = {
-                id: Date.now(),
-                name,
-                email,
-                password,
-                aadhar,
-                role,
-                experience,
-                rate: 200
-            };
-
-            workers.push(newWorker);
-            localStorage.setItem('workers', JSON.stringify(workers));
-
-            alert('Account created successfully! Please login.');
-            window.location.href = 'login.html';
         };
     </script>
 </body>

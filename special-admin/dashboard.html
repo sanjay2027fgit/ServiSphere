@@ -228,69 +228,91 @@
     </div>
 
     <script>
-        (function() {
-            // Auth check
+        const API = "http://localhost:5000/api";
+
+        (async function() {
             if (!localStorage.getItem('currentSpecialAdmin')) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            let payments = JSON.parse(localStorage.getItem('payments') || '[]');
+            try {
+                const [paymentsRes, workersRes, usersRes] = await Promise.all([
+                    fetch(API + "/payments/special-admin/pending"),
+                    fetch(API + "/admin/workers"),
+                    fetch(API + "/admin/users")
+                ]);
 
-            // Helper to get name
-            function getWorkerName(workerId) {
-                const w = workers.find(w => w.id === workerId);
-                return w ? w.name || w.email : 'Unknown';
-            }
-            function getUserEmail(userId) {
-                return userId || '—';
-            }
+                const [payments, workers, users] = await Promise.all([
+                    paymentsRes.json(),
+                    workersRes.json(),
+                    usersRes.json()
+                ]);
 
-            // Metrics
-            const pendingRelease = payments.filter(p => p.status === 'paid_by_user').length;
-            const approvedCount = payments.filter(p => p.status === 'approved').length;
-            const totalRev = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-            document.getElementById('pendingReleaseCount').innerText = pendingRelease;
-            document.getElementById('totalApprovedCount').innerText = approvedCount;
-            document.getElementById('totalRevenue').innerText = `₹${totalRev}`;
+                const workersById = {};
+                (workers || []).forEach(w => {
+                    workersById[w.id] = w;
+                });
 
-            // Table body
-            const tbody = document.getElementById('paymentsBody');
-            const relevantPayments = payments.filter(p => p.status === 'paid_by_user'); // only those needing admin action
-            if (relevantPayments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">No payments waiting for release</td></tr>';
-            } else {
-                tbody.innerHTML = relevantPayments.map(p => {
-                    return `
-                        <tr>
-                            <td>${p.id}</td>
-                            <td>${p.bookingId}</td>
-                            <td>${getWorkerName(p.workerId)}</td>
-                            <td>${getUserEmail(p.userId)}</td>
-                            <td>₹${p.amount}</td>
-                            <td><span class="badge badge-paid_by_user">${p.status}</span></td>
-                            <td><button class="approve-btn" onclick="approvePayment(${p.id})">✓ Approve & Release</button></td>
-                        </tr>
-                    `;
-                }).join('');
-            }
+                const usersById = {};
+                (users || []).forEach(u => {
+                    usersById[u.id] = u;
+                });
 
-            window.approvePayment = function(paymentId) {
-                let payments = JSON.parse(localStorage.getItem('payments') || '[]');
-                const index = payments.findIndex(p => p.id === paymentId);
-                if (index !== -1 && payments[index].status === 'paid_by_user') {
-                    payments[index].status = 'approved';
-                    localStorage.setItem('payments', JSON.stringify(payments));
-                    alert('Payment approved and released to worker.');
-                    window.location.reload();
+                const pendingRelease = (payments || []).length;
+                const totalRev = (payments || []).reduce(
+                    (sum, p) => sum + (Number(p.amount) || 0),
+                    0
+                );
+
+                document.getElementById('pendingReleaseCount').innerText = pendingRelease;
+                document.getElementById('totalApprovedCount').innerText = "—";
+                document.getElementById('totalRevenue').innerText = `₹${totalRev}`;
+
+                const tbody = document.getElementById('paymentsBody');
+                if (!payments || payments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">No payments waiting for release</td></tr>';
                 } else {
-                    alert('Payment not found or already processed.');
+                    tbody.innerHTML = payments.map(p => {
+                        const worker = workersById[p.worker_id];
+                        const workerName = worker ? (worker.name || worker.email) : (p.worker_id || 'Unknown');
+                        const user = usersById[p.user_id];
+                        const userEmail = user ? user.email : (p.user_id || '—');
+                        return `
+                            <tr>
+                                <td>${p.id}</td>
+                                <td>${p.booking_id}</td>
+                                <td>${workerName}</td>
+                                <td>${userEmail}</td>
+                                <td>₹${p.amount}</td>
+                                <td><span class="badge badge-paid_by_user">${p.status}</span></td>
+                                <td><button class="approve-btn" onclick="approvePayment(${p.id})">✓ Approve & Release</button></td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
-            };
 
-            // Logout
+                window.approvePayment = async function(paymentId) {
+                    try {
+                        const res = await fetch(API + "/payments/" + paymentId + "/approve", {
+                            method: "POST"
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            alert(data.message || "Failed to approve payment");
+                            return;
+                        }
+                        alert('Payment approved and released to worker.');
+                        window.location.reload();
+                    } catch (err) {
+                        alert("Server error");
+                    }
+                };
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load special admin data from server");
+            }
+
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('currentSpecialAdmin');
                 window.location.href = '../index.html';

@@ -391,6 +391,8 @@
 
     <script>
         (function() {
+            const API = "http://localhost:5000/api";
+
             const currentWorker = JSON.parse(localStorage.getItem('currentWorker'));
             if (!currentWorker) {
                 window.location.href = 'login.html';
@@ -398,125 +400,107 @@
             }
 
             document.getElementById('workerInfo').innerHTML = `
-                <p><strong>${currentWorker.name || currentWorker.email}</strong> · ${currentWorker.role || 'Worker'} · ${currentWorker.experience || 0} years experience</p>
+                <p><strong>${currentWorker.name || currentWorker.email}</strong> · Worker</p>
             `;
 
-            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
-            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            const payments = JSON.parse(localStorage.getItem('payments') || '[]');
-            const workerId = currentWorker.id;
+            async function loadData() {
+                try {
+                    const [bookingsRes, paymentsRes] = await Promise.all([
+                        fetch(API + "/bookings/worker/" + currentWorker.id),
+                        fetch(API + "/admin/payments")
+                    ]);
 
-            const workerBookings = bookings.filter(b => b.workerId === workerId);
-            const pendingB = workerBookings.filter(b => b.status === 'pending');
-            const activeB = workerBookings.filter(b => b.status !== 'pending' && b.status !== 'completed');
+                    const bookings = await bookingsRes.json();
+                    const allPayments = await paymentsRes.json();
 
-            const workerPayments = payments.filter(p => p.workerId === workerId);
-            let available = 0, approved = 0, pendingUser = 0;
-            workerPayments.forEach(p => {
-                if (p.status === 'paid_by_user') available += p.amount;
-                else if (p.status === 'approved') approved += p.amount;
-                else if (p.status === 'pending') pendingUser += p.amount;
-            });
+                    const workerPayments = (allPayments || []).filter(p => p.worker_id === currentWorker.id);
 
-            document.getElementById('availableEarnings').innerText = `₹${available}`;
-            document.getElementById('totalApproved').innerText = `₹${approved}`;
-            document.getElementById('pendingUser').innerText = `₹${pendingUser}`;
+                    let available = 0, approved = 0, pendingUser = 0;
+                    workerPayments.forEach(p => {
+                        const amt = Number(p.amount) || 0;
+                        if (p.status === 'paid_by_user') available += amt;
+                        else if (p.status === 'approved') approved += amt;
+                        else if (p.status === 'pending') pendingUser += amt;
+                    });
 
-            function getUserEmail(userId) {
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                const u = users.find(u => u.email === userId);
-                return u ? u.email : userId;
+                    document.getElementById('availableEarnings').innerText = `₹${available}`;
+                    document.getElementById('totalApproved').innerText = `₹${approved}`;
+                    document.getElementById('pendingUser').innerText = `₹${pendingUser}`;
+
+                    const pendingB = (bookings || []).filter(b => b.status === 'pending');
+                    const activeB = (bookings || []).filter(b => b.status !== 'pending' && b.status !== 'completed');
+
+                    renderPending(pendingB);
+                    renderActive(activeB);
+
+                    window.requestPayout = function() {
+                        if (available === 0) {
+                            alert('No funds available for payout.');
+                            return;
+                        }
+                        alert(`✨ Payout request of ₹${available} noted (hook to backend if needed).`);
+                    };
+                } catch (err) {
+                    console.error("Worker dashboard load error", err);
+                }
             }
 
-            function formatLocation(loc) {
-                if (!loc) return '📍 Location not set';
-                if (typeof loc === 'string') return loc;
-                if (loc.address) return loc.address;
-                if (loc.lat && loc.lng) return `${loc.lat}, ${loc.lng}`;
-                return '📍 Location';
-            }
-
-            // Render pending
-            const pendingDiv = document.getElementById('pendingBookings');
-            if (pendingB.length === 0) {
-                pendingDiv.innerHTML = '<div class="empty-message">✨ No pending bookings — ready to shine</div>';
-            } else {
-                pendingDiv.innerHTML = pendingB.map(b => {
-                    const userEmail = getUserEmail(b.userId);
-                    return `
-                        <div class="job-card">
-                            <p><strong>Booking #${b.id}</strong></p>
-                            <p>👤 User: ${userEmail}</p>
-                            <p>⏱️ Created: ${b.createdAt ? b.createdAt.slice(0,10) : '—'}</p>
-                            <div class="job-actions">
-                                <button onclick="acceptJob(${b.id})">✅ Accept</button>
-                            </div>
+            function renderPending(pendingB) {
+                const pendingDiv = document.getElementById('pendingBookings');
+                if (!pendingB || pendingB.length === 0) {
+                    pendingDiv.innerHTML = '<div class="empty-message">✨ No pending bookings — ready to shine</div>';
+                    return;
+                }
+                pendingDiv.innerHTML = pendingB.map(b => `
+                    <div class="job-card">
+                        <p><strong>Booking #${b.id}</strong></p>
+                        <p>👤 User: ${b.user_id}</p>
+                        <p>⏱️ Created: ${b.created_at ? b.created_at.slice(0,10) : '—'}</p>
+                        <div class="job-actions">
+                            <button onclick="acceptJob('${b.id}')">✅ Accept</button>
                         </div>
-                    `;
-                }).join('');
+                    </div>
+                `).join('');
             }
 
-            // Render active jobs
-            const activeDiv = document.getElementById('activeJobs');
-            if (activeB.length === 0) {
-                activeDiv.innerHTML = '<div class="empty-message">⚡ No active jobs — go get them</div>';
-            } else {
+            function renderActive(activeB) {
+                const activeDiv = document.getElementById('activeJobs');
+                if (!activeB || activeB.length === 0) {
+                    activeDiv.innerHTML = '<div class="empty-message">⚡ No active jobs — go get them</div>';
+                    return;
+                }
                 activeDiv.innerHTML = activeB.map(b => {
-                    const userEmail = getUserEmail(b.userId);
-                    let actionButton = '';
-                    if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
-                        actionButton = `<a href="job-details.html?bookingId=${b.id}">🔧 Update Status</a>`;
-                    }
-                    const dateTime = b.date && b.timeSlot ? `${b.date} ${b.timeSlot}` : 'Time not set';
-                    const locationStr = formatLocation(b.location);
                     const extraClass = b.status === 'accepted' ? 'accepted-taken' : '';
                     return `
                         <div class="job-card ${extraClass}">
                             <p><strong>Booking #${b.id}</strong></p>
-                            <p>👤 User: ${userEmail}</p>
-                            <p>📌 Status: <span class="badge">${b.status.replace(/_/g, ' ')}</span></p>
-                            <div class="detail-row"><i>📅</i> ${dateTime}</div>
-                            <div class="detail-row"><i>📍</i> ${locationStr}</div>
+                            <p>👤 User: ${b.user_id}</p>
+                            <p>📌 Status: <span class="badge">${(b.status || '').replace(/_/g, ' ')}</span></p>
                             <div class="job-actions">
-                                ${actionButton}
+                                <a href="job-details.html?bookingId=${b.id}">🔧 Update Status</a>
                             </div>
                         </div>
                     `;
                 }).join('');
             }
 
-            window.acceptJob = function(bookingId) {
-                const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-                const index = bookings.findIndex(b => b.id === bookingId);
-                if (index !== -1 && bookings[index].status === 'pending') {
-                    bookings[index].status = 'accepted';
-                    localStorage.setItem('bookings', JSON.stringify(bookings));
+            window.acceptJob = async function(bookingId) {
+                try {
+                    const res = await fetch(API + "/bookings/" + bookingId + "/status", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "accepted" })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        alert(data.message || "Failed to accept job");
+                        return;
+                    }
                     alert('✅ Job accepted! Golden opportunity.');
-                    window.location.reload();
+                    loadData();
+                } catch (err) {
+                    alert("Server error");
                 }
-            };
-
-            window.requestPayout = function() {
-                if (available === 0) {
-                    alert('No funds available for payout.');
-                    return;
-                }
-                const payoutRequests = JSON.parse(localStorage.getItem('payoutRequests') || '[]');
-                const existing = payoutRequests.find(r => r.workerId === workerId && r.status === 'pending');
-                if (existing) {
-                    alert('You already have a pending payout request.');
-                    return;
-                }
-                const newRequest = {
-                    id: Date.now(),
-                    workerId: workerId,
-                    amount: available,
-                    status: 'pending',
-                    requestedAt: new Date().toISOString()
-                };
-                payoutRequests.push(newRequest);
-                localStorage.setItem('payoutRequests', JSON.stringify(payoutRequests));
-                alert(`✨ Payout request of ₹${available} sent to admin.`);
             };
 
             document.getElementById('timestamp').innerText = new Date().toLocaleString();
@@ -525,6 +509,8 @@
                 localStorage.removeItem('currentWorker');
                 window.location.href = '../index.html';
             });
+
+            loadData();
         })();
     </script>
 </body>

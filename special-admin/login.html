@@ -125,21 +125,41 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').onsubmit = function(e) {
+        const API = "http://localhost:5000/api";
+
+        document.getElementById('loginForm').onsubmit = async function(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Mock special admin credentials
-            if (email === 'special@servisphere.com' && password === 'special123') {
+            try {
+                const res = await fetch(API + "/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || "Login failed");
+                    return;
+                }
+
+                const user = data.user;
+                if (!user || user.role !== "special-admin") {
+                    alert("You are not allowed to login here.");
+                    return;
+                }
+
                 localStorage.setItem(
-                    'currentSpecialAdmin',
-                    JSON.stringify({ email, role: 'special' })
+                    "currentSpecialAdmin",
+                    JSON.stringify(user)
                 );
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('Invalid special admin credentials');
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                alert("Server error");
             }
         };
     </script>

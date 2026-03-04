@@ -305,131 +305,145 @@
     </div>
 
     <script>
-        (function() {
-            // Admin authentication
+        const API = "http://localhost:5000/api";
+
+        (async function() {
             if (!localStorage.getItem('currentAdmin')) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Load data
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
-            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            const payments = JSON.parse(localStorage.getItem('payments') || '[]');
-            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+            const escapeHtml = (str) =>
+                String(str || '').replace(/[&<>"]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    if (m === '"') return '&quot;';
+                    return m;
+                });
 
-            // Helper: escape HTML
-            const escape = (str) => String(str || '').replace(/[&<>"]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                if (m === '"') return '&quot;';
-                return m;
-            });
+            try {
+                const [usersRes, workersRes, bookingsRes, paymentsRes, feedbackRes] =
+                    await Promise.all([
+                        fetch(API + "/admin/users"),
+                        fetch(API + "/admin/workers"),
+                        fetch(API + "/admin/bookings"),
+                        fetch(API + "/admin/payments"),
+                        fetch(API + "/admin/feedback")
+                    ]);
 
-            // Helper: get worker name by ID (fallback to ID)
-            function getWorkerName(workerId) {
-                if (!workerId) return '—';
-                const worker = workers.find(w => w.id == workerId || w.id === workerId);
-                return worker ? worker.name || worker.email : workerId;
+                const [users, workers, bookings, payments, feedbacks] =
+                    await Promise.all([
+                        usersRes.json(),
+                        workersRes.json(),
+                        bookingsRes.json(),
+                        paymentsRes.json(),
+                        feedbackRes.json()
+                    ]);
+
+                let totalRevenue = 0;
+                let pendingPayouts = 0;
+                let completedPayouts = 0;
+
+                (payments || []).forEach(p => {
+                    const amt = Number(p.amount) || 0;
+                    totalRevenue += amt;
+                    if (p.status === 'paid_by_user') pendingPayouts += amt;
+                    if (p.status === 'approved') completedPayouts += amt;
+                });
+
+                document.getElementById('totalRevenue').innerText = `₹${totalRevenue}`;
+                document.getElementById('pendingPayouts').innerText = `₹${pendingPayouts}`;
+                document.getElementById('completedPayouts').innerText = `₹${completedPayouts}`;
+
+                const usersBody = document.getElementById('usersBody');
+                usersBody.innerHTML = (users && users.length)
+                    ? users.map(u => `<tr><td>${escapeHtml(u.email)}</td></tr>`).join('')
+                    : '<tr><td class="empty-msg">No users</td></tr>';
+
+                const workersById = {};
+                (workers || []).forEach(w => {
+                    workersById[w.id] = w;
+                });
+
+                const workersBody = document.getElementById('workersBody');
+                workersBody.innerHTML = (workers && workers.length)
+                    ? workers.map(w => `
+                        <tr>
+                            <td>${escapeHtml(w.email)}</td>
+                            <td>${escapeHtml(w.name || '—')}</td>
+                            <td>${escapeHtml(w.role)}</td>
+                            <td>—</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="4" class="empty-msg">No workers</td></tr>';
+
+                function formatLocationFromBooking(b) {
+                    if (b.user_lat && b.user_lng) return `${b.user_lat}, ${b.user_lng}`;
+                    return '—';
+                }
+
+                const bookingsBody = document.getElementById('bookingsBody');
+                if (!bookings || bookings.length === 0) {
+                    bookingsBody.innerHTML = '<tr><td colspan="6" class="empty-msg">No bookings</td></tr>';
+                } else {
+                    bookingsBody.innerHTML = bookings.map(b => {
+                        const worker = workersById[b.worker_id];
+                        const workerName = worker ? (worker.name || worker.email) : (b.worker_id || '—');
+                        const loc = formatLocationFromBooking(b);
+                        const created = b.created_at ? b.created_at.slice(0,10) : '—';
+                        return `
+                            <tr>
+                                <td>${b.id}</td>
+                                <td>${escapeHtml(b.user_id)}</td>
+                                <td>${escapeHtml(workerName)}</td>
+                                <td><span class="badge">${escapeHtml(b.status || '')}</span></td>
+                                <td>${created}</td>
+                                <td>${loc}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                const paymentsBody = document.getElementById('paymentsBody');
+                if (!payments || payments.length === 0) {
+                    paymentsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No payments</td></tr>';
+                } else {
+                    paymentsBody.innerHTML = payments.map(p => {
+                        const worker = workersById[p.worker_id];
+                        const workerName = worker ? (worker.name || worker.email) : (p.worker_id || '—');
+                        return `
+                            <tr>
+                                <td>${p.id}</td>
+                                <td>${p.booking_id}</td>
+                                <td>${escapeHtml(workerName)}</td>
+                                <td>₹${Number(p.amount) || 0}</td>
+                                <td><span class="badge">${escapeHtml(p.status || '')}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                const feedbackBody = document.getElementById('feedbackBody');
+                if (!feedbacks || feedbacks.length === 0) {
+                    feedbackBody.innerHTML = '<tr><td colspan="4" class="empty-msg">No feedback</td></tr>';
+                } else {
+                    feedbackBody.innerHTML = feedbacks.map(f => `
+                        <tr>
+                            <td>${f.booking_id}</td>
+                            <td>${escapeHtml(f.user_id)}</td>
+                            <td>${f.rating}/5</td>
+                            <td>“${escapeHtml(f.comment || '').substring(0,40)}${f.comment && f.comment.length>40 ? '…' : ''}”</td>
+                        </tr>
+                    `).join('');
+                }
+
+                document.getElementById('timestamp').innerText = new Date().toLocaleString();
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load admin data from server");
             }
 
-            // Helper: format location from booking.location
-            function formatLocation(loc) {
-                if (!loc) return '—';
-                if (typeof loc === 'string') return escape(loc);
-                if (loc.address) return escape(loc.address);
-                if (loc.lat && loc.lng) return `${loc.lat}, ${loc.lng}`;
-                return '—';
-            }
-
-            // ---- EARNINGS CALCULATIONS - FIXED: convert amounts to numbers ----
-            let totalRevenue = 0;
-            let pendingPayouts = 0;      // paid_by_user (user paid, waiting for special admin)
-            let completedPayouts = 0;     // approved (released to worker)
-
-            payments.forEach(p => {
-                const amt = Number(p.amount) || 0;  // ensure numeric
-                totalRevenue += amt;
-                if (p.status === 'paid_by_user') pendingPayouts += amt;
-                if (p.status === 'approved') completedPayouts += amt;
-            });
-
-            document.getElementById('totalRevenue').innerText = `₹${totalRevenue}`;
-            document.getElementById('pendingPayouts').innerText = `₹${pendingPayouts}`;
-            document.getElementById('completedPayouts').innerText = `₹${completedPayouts}`;
-
-            // ---- USERS TABLE ----
-            const usersBody = document.getElementById('usersBody');
-            usersBody.innerHTML = users.length 
-                ? users.map(u => `<tr><td>${escape(u.email)}</td></tr>`).join('')
-                : '<tr><td class="empty-msg">No users</td></tr>';
-
-            // ---- WORKERS TABLE (added name column) ----
-            const workersBody = document.getElementById('workersBody');
-            workersBody.innerHTML = workers.length
-                ? workers.map(w => `<tr><td>${escape(w.email)}</td><td>${escape(w.name || '—')}</td><td>${escape(w.role)}</td><td>${escape(w.experience)} yrs</td></tr>`).join('')
-                : '<tr><td colspan="4" class="empty-msg">No workers</td></tr>';
-
-            // ---- BOOKINGS TABLE (with worker name and location) ----
-            const bookingsBody = document.getElementById('bookingsBody');
-            if (bookings.length === 0) {
-                bookingsBody.innerHTML = '<tr><td colspan="6" class="empty-msg">No bookings</td></tr>';
-            } else {
-                bookingsBody.innerHTML = bookings.map(b => {
-                    const workerName = getWorkerName(b.workerId);
-                    const locationStr = formatLocation(b.location);
-                    return `
-                    <tr>
-                        <td>${b.id}</td>
-                        <td>${escape(b.userId)}</td>
-                        <td>${escape(workerName)}</td>
-                        <td><span class="badge">${escape(b.status)}</span></td>
-                        <td>${b.createdAt ? b.createdAt.slice(0,10) : '—'}</td>
-                        <td>${locationStr}</td>
-                    </tr>
-                `}).join('');
-            }
-
-            // ---- PAYMENTS TABLE (with worker name) ----
-            const paymentsBody = document.getElementById('paymentsBody');
-            if (payments.length === 0) {
-                paymentsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No payments</td></tr>';
-            } else {
-                paymentsBody.innerHTML = payments.map(p => {
-                    const workerName = getWorkerName(p.workerId);
-                    return `
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.bookingId}</td>
-                        <td>${escape(workerName)}</td>
-                        <td>₹${Number(p.amount) || 0}</td>
-                        <td><span class="badge">${escape(p.status)}</span></td>
-                    </tr>
-                `}).join('');
-            }
-
-            // ---- FEEDBACK TABLE ----
-            const feedbackBody = document.getElementById('feedbackBody');
-            if (feedbacks.length === 0) {
-                feedbackBody.innerHTML = '<tr><td colspan="4" class="empty-msg">No feedback</td></tr>';
-            } else {
-                feedbackBody.innerHTML = feedbacks.map(f => {
-                    return `
-                    <tr>
-                        <td>${f.bookingId}</td>
-                        <td>${escape(f.userId)}</td>
-                        <td>${f.rating}/5</td>
-                        <td>“${escape(f.comment).substring(0,40)}${f.comment && f.comment.length>40 ? '…' : ''}”</td>
-                    </tr>
-                `}).join('');
-            }
-
-            // Timestamp
-            document.getElementById('timestamp').innerText = new Date().toLocaleString();
-
-            // Logout
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('currentAdmin');
                 window.location.href = '../index.html';

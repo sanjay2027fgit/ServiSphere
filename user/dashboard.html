@@ -544,6 +544,7 @@
 
 <script>
     (function() {
+        const API = "http://localhost:5000/api";
         // ---------- EMERGENCY MODE TOGGLE ----------
         const emergencyBtn = document.getElementById('emergencyBtn');
         emergencyBtn.addEventListener('click', () => {
@@ -562,32 +563,11 @@
             return;
         }
 
-        // Expanded workers list with all roles (including new services)
-        let workers = JSON.parse(localStorage.getItem('workers')) || [
-            { id: 1, name: 'Raj', email: 'raj@example.com', role: 'Electrician', experience: 3, rate: 200 },
-            { id: 2, name: 'Simran', email: 'simran@example.com', role: 'Plumber', experience: 5, rate: 200 },
-            { id: 3, name: 'Amit', email: 'amit@example.com', role: 'AC Mechanic', experience: 4, rate: 250 },
-            { id: 4, name: 'Vikram', email: 'vikram@example.com', role: 'Bike Mechanic', experience: 6, rate: 180 },
-            { id: 5, name: 'John', email: 'john@example.com', role: 'Carpenter', experience: 7, rate: 220 },
-            { id: 6, name: 'Geeta', email: 'geeta@example.com', role: 'House Cleaning', experience: 2, rate: 150 },
-            { id: 7, name: 'Ravi', email: 'ravi@example.com', role: 'Painter', experience: 5, rate: 210 },
-            { id: 8, name: 'Karan', email: 'karan@example.com', role: 'Refrigerator Repair', experience: 4, rate: 230 },
-            { id: 9, name: 'Priya', email: 'priya@example.com', role: 'Washing Machine Repair', experience: 3, rate: 200 },
-            { id: 10, name: 'Suresh', email: 'suresh@example.com', role: 'RO Water Purifier Service', experience: 4, rate: 190 },
-            { id: 11, name: 'Anita', email: 'anita@example.com', role: 'Tutor', experience: 5, rate: 300 },
-            { id: 12, name: 'Sanjay', email: 'sanjay@example.com', role: 'Chef', experience: 8, rate: 400 },
-            { id: 13, name: 'Hari', email: 'hari@example.com', role: 'Gardener', experience: 6, rate: 180 },
-            { id: 14, name: 'Manoj', email: 'manoj@example.com', role: 'Acting Driver', experience: 4, rate: 250 },
-            { id: 15, name: 'Kavita', email: 'kavita@example.com', role: 'Masseur', experience: 3, rate: 350 },
-            { id: 16, name: 'Pooja', email: 'pooja@example.com', role: 'Beautician', experience: 4, rate: 280 },
-            { id: 17, name: 'Deepak', email: 'deepak@example.com', role: 'Delivery Partner', experience: 2, rate: 150 },
-            { id: 18, name: 'Gopal', email: 'gopal@example.com', role: 'Load Man', experience: 3, rate: 160 }
-        ];
-        localStorage.setItem('workers', JSON.stringify(workers));
+        // Workers will now be loaded from Supabase, not seeded locally
+        let workers = [];
 
-        const loggedInWorker = workers.find(w => w.email === currentUser.email);
-        document.getElementById('userName').innerText = loggedInWorker?.name || currentUser.email;
-        document.getElementById('userEmail').innerText = loggedInWorker ? `(${currentUser.email})` : '';
+        document.getElementById('userName').innerText = currentUser.name || currentUser.email;
+        document.getElementById('userEmail').innerText = currentUser.email ? `(${currentUser.email})` : '';
 
         // ---------- SERVICES DATA (expanded: 18 services) ----------
         const services = [
@@ -687,18 +667,13 @@
             const workersDiv = document.getElementById('workersList');
             const filterHint = document.getElementById('filterHint');
             let filtered = workers;
-            let hintText = '';
 
-            if (roleFilter) {
-                const lowerRole = roleFilter.trim().toLowerCase();
-                filtered = workers.filter(w => w.role.toLowerCase().includes(lowerRole) || w.role.toLowerCase() === lowerRole);
-                hintText = `Showing workers for <strong>${roleFilter}</strong> `;
-                if (filtered.length === 0) hintText += ' (none available)';
-                hintText += `<span class="clear-filter" id="clearFilter">✕ clear filter</span>`;
+            if (roleFilter && workers.length > 0) {
+                // we don't yet store per-service roles in Supabase; just show all workers
+                filterHint.innerHTML = `Showing workers for <strong>${roleFilter}</strong> (all available workers listed)`;
             } else {
-                hintText = 'All available workers';
+                filterHint.innerHTML = 'All available workers';
             }
-            filterHint.innerHTML = hintText;
 
             if (filtered.length === 0) {
                 workersDiv.innerHTML = '<p style="padding:1rem;">No workers found for this service.</p>';
@@ -707,8 +682,7 @@
 
             workersDiv.innerHTML = filtered.map(w => `
                 <div class="worker-card">
-                    <strong>${w.name}</strong> - ${w.role} (${w.experience} yrs)<br>
-                    Rate: ₹${w.rate}/hr<br>
+                    <strong>${w.name || w.email}</strong> - Worker<br>
                     <a href="booking-form.html?workerId=${w.id}" class="btn">Book</a>
                 </div>
             `).join('');
@@ -734,167 +708,185 @@
         });
 
         // ---------- MY BOOKINGS TAB RENDERING ----------
-        function renderBookingsTab() {
+        async function renderBookingsTab() {
             const bookingsDiv = document.getElementById('bookingsList');
-            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
-
-            if (bookings.length === 0) {
-                bookingsDiv.innerHTML = '<p>No bookings yet.</p>';
-                return;
-            }
-
-            bookingsDiv.innerHTML = bookings.map(b => {
-                const worker = workers.find(w => w.id === b.workerId);
-                let statusClass = '';
-                if (b.status === 'pending') statusClass = 'badge-pending';
-                else if (b.status === 'completed') statusClass = 'badge-completed';
-                else if (b.status === 'in_progress') statusClass = 'badge-paid';
-                let action = '';
-                if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
-                    action = `<a href="track.html?bookingId=${b.id}"><button>Track</button></a>`;
+            try {
+                const res = await fetch(API + "/bookings/user/" + currentUser.id);
+                const bookings = await res.json();
+                if (!res.ok) {
+                    bookingsDiv.innerHTML = '<p>Failed to load bookings.</p>';
+                    return;
                 }
-                let otpButton = '';
-                let otpDisplay = '';
-                if (b.status === 'arrived') {
-                    if (!b.otp) {
-                        otpButton = `<button onclick="generateOtp(${b.id})">Generate OTP</button>`;
-                    } else {
-                        otpDisplay = `<p><strong>OTP:</strong> ${b.otp}</p>`;
+                if (!bookings || bookings.length === 0) {
+                    bookingsDiv.innerHTML = '<p>No bookings yet.</p>';
+                    return;
+                }
+
+                bookingsDiv.innerHTML = bookings.map(b => {
+                    let statusClass = '';
+                    if (b.status === 'pending') statusClass = 'badge-pending';
+                    else if (b.status === 'completed') statusClass = 'badge-completed';
+                    else if (b.status === 'in_progress') statusClass = 'badge-paid';
+                    let action = '';
+                    if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
+                        action = `<a href="track.html?bookingId=${b.id}"><button>Track</button></a>`;
                     }
-                }
-                return `
-                    <div class="booking-card">
-                        <strong>ID:</strong> ${b.id}<br>
-                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId}<br>
-                        <strong>Status:</strong> <span class="badge ${statusClass}">${b.status}</span><br>
-                        ${otpDisplay}
-                        ${action} ${otpButton}
-                    </div>
-                `;
-            }).join('');
+                    let otpButton = '';
+                    let otpDisplay = '';
+                    if (b.status === 'arrived') {
+                        if (!b.otp) {
+                            otpButton = `<button onclick="generateOtp(${b.id})">Generate OTP</button>`;
+                        } else {
+                            otpDisplay = `<p><strong>OTP:</strong> ${b.otp}</p>`;
+                        }
+                    }
+                    return `
+                        <div class="booking-card">
+                            <strong>ID:</strong> ${b.id}<br>
+                            <strong>Worker:</strong> ${b.worker_id}<br>
+                            <strong>Status:</strong> <span class="badge ${statusClass}">${b.status}</span><br>
+                            ${otpDisplay}
+                            ${action} ${otpButton}
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Bookings load error", err);
+                bookingsDiv.innerHTML = '<p>Failed to load bookings.</p>';
+            }
         }
 
         // ---------- COMPLETED JOBS TAB RENDERING ----------
-        function renderCompletedJobs() {
+        async function renderCompletedJobs() {
             const completedDiv = document.getElementById('completedJobs');
-            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
-            const payments = JSON.parse(localStorage.getItem('payments') || '[]').filter(p => p.userId === currentUser.email);
-            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+            try {
+                const [bookingsRes, paymentsRes, feedbackRes] = await Promise.all([
+                    fetch(API + "/bookings/user/" + currentUser.id),
+                    fetch(API + "/admin/payments"),
+                    fetch(API + "/admin/feedback")
+                ]);
+                const [allBookings, allPayments, allFeedbacks] = await Promise.all([
+                    bookingsRes.json(),
+                    paymentsRes.json(),
+                    feedbackRes.json()
+                ]);
 
-            function getPaymentForBooking(bookingId) {
-                return payments.find(p => p.bookingId === bookingId);
-            }
+                const bookings = (allBookings || []).filter(b => b.status === 'completed');
+                const payments = (allPayments || []).filter(p => p.user_id === currentUser.id);
+                const feedbacks = (allFeedbacks || []).filter(f => f.user_id === currentUser.id);
 
-            function feedbackExists(bookingId) {
-                return feedbacks.some(f => f.bookingId === bookingId);
-            }
+                function getPaymentForBooking(bookingId) {
+                    return payments.find(p => p.booking_id === bookingId);
+                }
 
-            const completedBookings = bookings.filter(b => b.status === 'completed');
+                function feedbackExists(bookingId) {
+                    return feedbacks.some(f => f.booking_id === bookingId);
+                }
 
-            if (completedBookings.length === 0) {
-                completedDiv.innerHTML = '<p style="padding:1rem;">No completed jobs yet.</p>';
-                return;
-            }
+                if (bookings.length === 0) {
+                    completedDiv.innerHTML = '<p style="padding:1rem;">No completed jobs yet.</p>';
+                    return;
+                }
 
-            completedDiv.innerHTML = completedBookings.map(b => {
-                const worker = workers.find(w => w.id === b.workerId);
-                const payment = getPaymentForBooking(b.id);
-                const alreadyFeedback = feedbackExists(b.id);
+                completedDiv.innerHTML = bookings.map(b => {
+                    const payment = getPaymentForBooking(b.id);
+                    const alreadyFeedback = feedbackExists(b.id);
 
-                let actionsHtml = '';
+                    let actionsHtml = '';
 
-                if (payment) {
-                    if (payment.status === 'pending') {
+                    if (payment) {
+                        if (payment.status === 'pending') {
+                            actionsHtml += `
+                                <div style="margin:10px 0;">
+                                    <p><strong>Payment required:</strong> ₹${payment.amount}</p>
+                                </div>
+                            `;
+                        } else if (payment.status === 'paid_by_user') {
+                            actionsHtml += `<p><span class="badge badge-paid">Payment completed (awaiting admin release)</span></p>`;
+                        } else if (payment.status === 'approved') {
+                            actionsHtml += `<p><span class="badge badge-paid">Payment released to worker</span></p>`;
+                        }
+                    }
+
+                    if (!alreadyFeedback) {
                         actionsHtml += `
-                            <div style="margin:10px 0;">
-                                <p><strong>Payment required:</strong> ₹${payment.amount}</p>
-                                <button class="pay-btn" data-paymentid="${payment.id}" data-bookingid="${b.id}">💰 Pay Now</button>
+                            <div class="feedback-form" id="feedback-${b.id}">
+                                <p><strong>Leave feedback:</strong></p>
+                                <select id="rating-${b.id}" class="rating-select">
+                                    <option value="5">5 - Excellent</option>
+                                    <option value="4">4 - Good</option>
+                                    <option value="3">3 - Average</option>
+                                    <option value="2">2 - Poor</option>
+                                    <option value="1">1 - Terrible</option>
+                                </select>
+                                <textarea id="comment-${b.id}" placeholder="Write your feedback (optional)" rows="2"></textarea>
+                                <button class="feedback-btn" data-bookingid="${b.id}">⭐ Submit Feedback</button>
                             </div>
                         `;
-                    } else if (payment.status === 'paid_by_user') {
-                        actionsHtml += `<p><span class="badge badge-paid">Payment completed (awaiting admin release)</span></p>`;
-                    } else if (payment.status === 'approved') {
-                        actionsHtml += `<p><span class="badge badge-paid">Payment released to worker</span></p>`;
+                    } else {
+                        actionsHtml += `<p><span class="badge badge-completed">Feedback already submitted</span></p>`;
                     }
-                } else {
-                    actionsHtml += `<p>No payment record found.</p>`;
-                }
 
-                if (!alreadyFeedback) {
-                    actionsHtml += `
-                        <div class="feedback-form" id="feedback-${b.id}">
-                            <p><strong>Leave feedback for ${worker ? worker.name : 'worker'}:</strong></p>
-                            <select id="rating-${b.id}" class="rating-select">
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Good</option>
-                                <option value="3">3 - Average</option>
-                                <option value="2">2 - Poor</option>
-                                <option value="1">1 - Terrible</option>
-                            </select>
-                            <textarea id="comment-${b.id}" placeholder="Write your feedback (optional)" rows="2"></textarea>
-                            <button class="feedback-btn" data-bookingid="${b.id}">⭐ Submit Feedback</button>
+                    return `
+                        <div class="booking-card" id="booking-${b.id}">
+                            <strong>Job ID:</strong> ${b.id}<br>
+                            <strong>Worker:</strong> ${b.worker_id}<br>
+                            ${actionsHtml}
                         </div>
                     `;
-                } else {
-                    actionsHtml += `<p><span class="badge badge-completed">Feedback already submitted</span></p>`;
-                }
+                }).join('');
 
-                return `
-                    <div class="booking-card" id="booking-${b.id}">
-                        <strong>Job ID:</strong> ${b.id}<br>
-                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId} ${worker ? '('+worker.role+')' : ''}<br>
-                        <strong>Completed on:</strong> ${b.updatedAt ? new Date(b.updatedAt).toLocaleDateString() : 'recently'}<br>
-                        ${actionsHtml}
-                    </div>
-                `;
-            }).join('');
-
-            // Attach payment button listeners
-            document.querySelectorAll('.pay-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    const paymentId = parseInt(this.dataset.paymentid);
-                    const bookingId = parseInt(this.dataset.bookingid);
-                    let payments = JSON.parse(localStorage.getItem('payments') || '[]');
-                    const index = payments.findIndex(p => p.id === paymentId);
-                    if (index !== -1 && payments[index].status === 'pending') {
-                        payments[index].status = 'paid_by_user';
-                        localStorage.setItem('payments', JSON.stringify(payments));
-                        alert('Payment successful! Waiting for admin release.');
-                        window.location.reload();
-                    } else {
-                        alert('Payment already processed.');
-                    }
-                });
-            });
-
-            document.querySelectorAll('.feedback-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    const bookingId = parseInt(this.dataset.bookingid);
-                    const rating = document.getElementById(`rating-${bookingId}`).value;
-                    const comment = document.getElementById(`comment-${bookingId}`).value;
-                    const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
-                    if (feedbacks.some(f => f.bookingId === bookingId)) {
-                        alert('Feedback already submitted for this job.');
-                        return;
-                    }
-                    feedbacks.push({
-                        id: Date.now(),
-                        bookingId: bookingId,
-                        userId: currentUser.email,
-                        rating: parseInt(rating),
-                        comment: comment,
-                        date: new Date().toISOString()
+                document.querySelectorAll('.feedback-btn').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const bookingId = parseInt(this.dataset.bookingid);
+                        const rating = document.getElementById(`rating-${bookingId}`).value;
+                        const comment = document.getElementById(`comment-${bookingId}`).value;
+                        try {
+                            const res = await fetch(API + "/feedback", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    booking_id: bookingId,
+                                    user_id: currentUser.id,
+                                    rating: parseInt(rating),
+                                    comment
+                                })
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                                alert(data.message || "Failed to submit feedback");
+                                return;
+                            }
+                            alert('Feedback submitted. Thank you!');
+                            renderCompletedJobs();
+                        } catch (err) {
+                            alert("Server error");
+                        }
                     });
-                    localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
-                    alert('Feedback submitted. Thank you!');
-                    window.location.reload();
                 });
-            });
+            } catch (err) {
+                console.error("Completed jobs load error", err);
+                completedDiv.innerHTML = '<p style="padding:1rem;">Failed to load completed jobs.</p>';
+            }
+        }
+
+        async function loadWorkersFromApi() {
+            try {
+                const res = await fetch(API + "/admin/workers");
+                if (!res.ok) {
+                    console.error("Failed to load workers from API");
+                    return;
+                }
+                workers = await res.json();
+                renderWorkersTab(currentServiceFilter);
+            } catch (err) {
+                console.error("Workers API error", err);
+            }
         }
 
         // ---------- INITIAL RENDER ----------
         renderServicesTab();
-        renderWorkersTab(); // show all workers initially
+        loadWorkersFromApi(); // show only workers from Supabase
         renderBookingsTab();
         renderCompletedJobs();
 

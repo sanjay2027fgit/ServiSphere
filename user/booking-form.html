@@ -225,6 +225,8 @@
     </div>
 
     <script>
+        const API = "http://localhost:5000/api";
+
         (function() {
             // Get workerId from URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -305,7 +307,7 @@
             });
 
             // Form submission
-            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            document.getElementById('bookingForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const otpInput = document.getElementById('otp').value;
@@ -329,41 +331,33 @@
                     return;
                 }
 
-                // Create booking object with extra fields
-                const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-                const newBooking = {
-                    id: Date.now(),
-                    userId: currentUser.email,
-                    workerId: parseInt(workerIdVal) || workerIdVal,
-                    status: 'pending',
-                    rate: parseInt(rate),
-                    createdAt: new Date().toISOString(),
-                    date: date,
-                    timeSlot: timeSlot,
-                    location: {
-                        lat: selectedLatLng.lat,
-                        lng: selectedLatLng.lng,
-                        address: address
+                try {
+                    const res = await fetch(API + "/bookings", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            user_id: currentUser.id,
+                            worker_id: workerIdVal,
+                            date,
+                            time_slot: timeSlot,
+                            user_lat: selectedLatLng.lat,
+                            user_lng: selectedLatLng.lng,
+                            address
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(data.message || "Failed to create booking");
+                        return;
                     }
-                };
-                bookings.push(newBooking);
-                localStorage.setItem('bookings', JSON.stringify(bookings));
 
-                // Also create a payment record (optional)
-                const payments = JSON.parse(localStorage.getItem('payments') || '[]');
-                payments.push({
-                    id: Date.now() + 1,
-                    bookingId: newBooking.id,
-                    userId: currentUser.email,
-                    workerId: newBooking.workerId,
-                    amount: rate, // placeholder
-                    status: 'pending',
-                    createdAt: new Date().toISOString()
-                });
-                localStorage.setItem('payments', JSON.stringify(payments));
-
-                alert('✅ Booking request sent to worker!');
-                window.location.href = 'dashboard.html';
+                    alert('✅ Booking request sent to worker!');
+                    window.location.href = 'dashboard.html';
+                } catch (err) {
+                    alert("Server error");
+                }
             });
         })();
     </script>
