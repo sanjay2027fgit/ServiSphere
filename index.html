@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Servisphere</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 50px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 30px rgba(0, 123, 255, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px #00bfff;
+        }
+
+        .role-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .role-links a {
+            min-width: 180px;
+            padding: 15px 25px;
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.6);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glow animation */
+        .role-links a::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 60%);
+            transform: rotate(45deg);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .role-links a:hover::before {
+            opacity: 1;
+        }
+
+        .role-links a:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 198, 255, 1);
+        }
+
+        .role-links a:active {
+            transform: scale(0.95);
+        }
+
+        /* Different glow colors (optional but cool) */
+        .role-links a:nth-child(2) {
+            background: linear-gradient(135deg, #28a745, #7CFF00);
+            box-shadow: 0 0 15px rgba(124, 255, 0, 0.6);
+        }
+
+        .role-links a:nth-child(3) {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+        }
+
+        .role-links a:nth-child(4) {
+            background: linear-gradient(135deg, #9c27b0, #e040fb);
+            box-shadow: 0 0 15px rgba(224, 64, 251, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>✨ Welcome to Servisphere ✨</h1>
+
+        <div class="role-links">
+            <a href="user/login.html">I'm a User</a>
+            <a href="worker/login.html">I'm a Worker</a>
+            <a href="admin/login.html">Admin</a>
+            <a href="special-admin/login.html">Special Admin</a>
+        </div>
+    </div>
+</body>
+</html>

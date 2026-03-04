@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Payments</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+        .payment-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .pending { color: orange; }
+        .paid { color: green; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Payment Requests</h2>
+    <div id="paymentsList"></div>
+    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) window.location.href = 'login.html';
+
+        function loadPayments() {
+            const payments = JSON.parse(localStorage.getItem('payments') || '[]')
+                .filter(p => p.userId === currentUser.email && p.type === 'worker_payment');
+            const listDiv = document.getElementById('paymentsList');
+            listDiv.innerHTML = '';
+            if (payments.length === 0) {
+                listDiv.innerHTML = '<p>No payment requests.</p>';
+                return;
+            }
+            payments.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'payment-card';
+                div.innerHTML = `
+                    <p><strong>Payment ID:</strong> ${p.id}</p>
+                    <p><strong>Booking ID:</strong> ${p.bookingId}</p>
+                    <p><strong>Amount:</strong> ₹${p.amount}</p>
+                    <p><strong>Status:</strong> <span class="${p.status}">${p.status}</span></p>
+                    ${p.status === 'pending' ? '<button onclick="payNow('+p.id+')">Pay Now</button>' : ''}
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+        loadPayments();
+
+        window.payNow = function(paymentId) {
+            const payments = JSON.parse(localStorage.getItem('payments') || '[]');
+            const index = payments.findIndex(p => p.id === paymentId);
+            if (index !== -1) {
+                payments[index].status = 'paid_by_user'; // user paid, now special admin can release to worker
+                localStorage.setItem('payments', JSON.stringify(payments));
+                alert('Payment successful! Waiting for special admin to release to worker.');
+                loadPayments();
+            }
+        };
+    </script>
+</body>
+</html>

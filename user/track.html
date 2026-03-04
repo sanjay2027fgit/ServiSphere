@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Worker · Elite Silver</title>
+    <!-- modern font for premium feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #e4e7ec 0%, #d1d6df 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            margin: 0;
+            color: #1e2b3a;
+        }
+
+        /* main silver container – premium card with subtle metallic sheen */
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 2.5rem;
+            padding: 2.5rem 2.2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 
+                        0 2px 8px rgba(255,255,255,0.6) inset,
+                        0 -2px 6px rgba(0,0,0,0.05) inset;
+            transition: all 0.2s ease;
+        }
+
+        h2, h3 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1e3b4f;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5), -1px -1px 2px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 2.4rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #c0cbd8;
+            padding-bottom: 0.6rem;
+        }
+
+        h2::before {
+            content: "📍";
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 4px #aaa);
+        }
+
+        h3 {
+            font-size: 1.6rem;
+            margin: 1.2rem 0 0.8rem;
+            color: #2a4055;
+        }
+
+        /* info boxes with silver glass */
+        .info-box {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 1.8rem;
+            padding: 1.5rem 1.8rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 18px -10px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.7) inset;
+            color: #1e2e3f;
+        }
+
+        #map {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #dbe2ec, #c2ccda);
+            border: 2px dashed #a2b7cc;
+            border-radius: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3a5670;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 1.5rem 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.6);
+            text-shadow: 0 1px 2px white;
+        }
+
+        /* premium silver buttons */
+        button, .btn {
+            background: linear-gradient(145deg, #f0f3f7, #d9dfe8);
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1d3447;
+            box-shadow: 0 8px 16px -6px rgba(0, 20, 40, 0.2), 0 0 0 1px rgba(255,255,255,0.9) inset, 0 0 0 1px #b0c0d0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0.25rem 0.25rem 0 0;
+            letter-spacing: 0.3px;
+        }
+
+        button:hover, .btn:hover {
+            background: linear-gradient(145deg, #ffffff, #e6ecf5);
+            box-shadow: 0 12px 22px -8px #1e3b4f70, 0 0 0 2px white inset, 0 0 0 1px #88a0b8;
+            transform: scale(1.02);
+            color: #0a1e2c;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 10px -4px #1e3b4f, 0 0 0 1px #cddbe9 inset;
+        }
+
+        /* badge redesign – metallic, refined */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1.1rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            color: #1c2d3c;
+        }
+
+        .badge-completed {
+            background: #d1e0f0;
+            border-color: #8ba3c0;
+            color: #1f3a5e;
+            box-shadow: 0 2px 8px #8ba3c080;
+        }
+
+        .badge-paid {
+            background: #d7f0dc;
+            border-color: #6da57a;
+            color: #1d5430;
+        }
+
+        .badge-pending {
+            background: #faf0cf;
+            border-color: #c9ad6e;
+            color: #604d23;
+        }
+
+        /* notification area – soft silver */
+        .notification {
+            background: rgba(255,255,245,0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #ffffff;
+            border-radius: 1.8rem;
+            padding: 1.4rem 1.8rem;
+            margin: 1.8rem 0;
+            color: #1d3f3f;
+            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.8) inset;
+            font-weight: 500;
+        }
+
+        .notification strong {
+            font-weight: 700;
+            color: #1b4b6c;
+        }
+
+        /* select & textarea silver style */
+        select, textarea {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid #b3c7db;
+            border-radius: 2rem;
+            padding: 0.8rem 1.4rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: #1e3347;
+            width: 100%;
+            margin: 0.5rem 0 1rem;
+            outline: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 4px #ffffff;
+            transition: 0.15s;
+            resize: vertical;
+        }
+
+        select:focus, textarea:focus {
+            border-color: #7a9bc2;
+            box-shadow: 0 0 0 3px rgba(100, 150, 220, 0.2), inset 0 1px 5px white;
+            background: rgba(255,255,255,0.85);
+        }
+
+        /* hr line – subtle metallic */
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #b0c7dd, #809ab3, #b0c7dd, transparent);
+            margin: 2rem 0;
+        }
+
+        /* inline text adjustments */
+        .info-box p {
+            margin: 0.5rem 0;
+            font-size: 1.05rem;
+        }
+
+        strong {
+            font-weight: 600;
+            color: #1f3b50;
+        }
+
+        /* back button synergy */
+        .btn-back {
+            background: rgba(220, 230, 245, 0.8);
+            border: 1px solid #ffffff;
+        }
+
+        /* extra polish for otp section */
+        #otpSection h3, #postWorkSection h3 {
+            margin-top: 0;
+        }
+
+        #otpSection p {
+            background: rgba(220, 235, 255, 0.5);
+            border-radius: 2rem;
+            padding: 0.8rem 1.5rem;
+            border: 1px solid #c1d6ed;
+        }
+
+        /* responsive */
+        @media (max-width: 500px) {
+            .container {
+                padding: 1.8rem 1.2rem;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Track Worker</h2>
+        <div id="bookingInfo" class="info-box"></div>
+        <div id="map">📍 Map would show worker's live location here (simulated)</div>
+        <div id="status" class="info-box"></div>
+        
+        <!-- Notification area for completed work -->
+        <div id="notificationArea" style="display: none;"></div>
+
+        <!-- OTP section (arrived) -->
+        <div id="otpSection" style="display: none;"></div>
+
+        <!-- Payment & Feedback section (completed) -->
+        <div id="postWorkSection" style="display: none;"></div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="refreshStatus()">🔄 Refresh Status</button>
+            <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        // (script unchanged – full original functionality preserved)
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = parseInt(urlParams.get('bookingId'));
+        let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        let booking = bookings.find(b => b.id === bookingId);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!booking || booking.userId !== currentUser.email) {
+            alert('Invalid booking');
+            window.location.href = 'dashboard.html';
+        }
+
+        // Load workers and payments
+        const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+        const worker = workers.find(w => w.id === booking.workerId);
+        let payments = JSON.parse(localStorage.getItem('payments') || '[]');
+        let feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+
+        // Helper to find payment for this booking
+        function getPayment() {
+            return payments.find(p => p.bookingId === booking.id);
+        }
+
+        // Helper to check if feedback exists
+        function feedbackExists() {
+            return feedbacks.some(f => f.bookingId === booking.id);
+        }
+
+        // Update UI based on current booking status
+        function updateUI() {
+            // Refresh data from localStorage
+            bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            booking = bookings.find(b => b.id === bookingId);
+            payments = JSON.parse(localStorage.getItem('payments') || '[]');
+            feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+
+            const statusSpan = document.getElementById('status');
+            statusSpan.innerHTML = `<strong>Current Status:</strong> <span class="badge badge-${booking.status}">${booking.status.replace(/_/g, ' ')}</span>`;
+
+            const infoDiv = document.getElementById('bookingInfo');
+            infoDiv.innerHTML = `
+                <p><strong>Booking ID:</strong> ${booking.id}</p>
+                <p><strong>Worker:</strong> ${worker ? worker.name : booking.workerId} (${worker ? worker.role : ''})</p>
+            `;
+
+            // Handle OTP section (arrived)
+            const otpDiv = document.getElementById('otpSection');
+            if (booking.status === 'arrived') {
+                if (!booking.otp) {
+                    // Generate OTP automatically
+                    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                    booking.otp = otp;
+                    localStorage.setItem('bookings', JSON.stringify(bookings));
+                }
+                otpDiv.style.display = 'block';
+                otpDiv.innerHTML = `
+                    <h3>🔐 Worker Arrived</h3>
+                    <p><strong>OTP for worker:</strong> ${booking.otp}</p>
+                    <p>Share this OTP with the worker to start work.</p>
+                `;
+            } else {
+                otpDiv.style.display = 'none';
+            }
+
+            // Handle post-work section (completed)
+            const postDiv = document.getElementById('postWorkSection');
+            const notificationDiv = document.getElementById('notificationArea');
+            
+            if (booking.status === 'completed') {
+                postDiv.style.display = 'block';
+                notificationDiv.style.display = 'block';
+                notificationDiv.innerHTML = `
+                    <div class="notification">
+                        ✅ <strong>Work completed!</strong> Please complete payment and feedback below.
+                    </div>
+                `;
+
+                const payment = getPayment();
+                let paymentHtml = '';
+                let feedbackHtml = '';
+
+                // Payment part
+                if (payment) {
+                    if (payment.status === 'pending') {
+                        paymentHtml = `
+                            <div style="margin:15px 0;">
+                                <h4>💰 Payment Required</h4>
+                                <p>Amount: ₹${payment.amount}</p>
+                                <button id="payNowBtn">Pay Now</button>
+                            </div>
+                        `;
+                    } else if (payment.status === 'paid_by_user') {
+                        paymentHtml = `<p><span class="badge badge-paid">Payment completed (awaiting admin release)</span></p>`;
+                    } else if (payment.status === 'approved') {
+                        paymentHtml = `<p><span class="badge badge-paid">Payment released to worker</span></p>`;
+                    }
+                } else {
+                    paymentHtml = `<p>No payment record found.</p>`;
+                }
+
+                // Feedback part
+                if (!feedbackExists()) {
+                    feedbackHtml = `
+                        <div style="margin:15px 0;">
+                            <h4>⭐ Leave Feedback</h4>
+                            <select id="feedbackRating">
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Good</option>
+                                <option value="3">3 - Average</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="1">1 - Terrible</option>
+                            </select>
+                            <textarea id="feedbackComment" placeholder="Write your feedback (optional)" rows="3"></textarea>
+                            <button id="submitFeedbackBtn">Submit Feedback</button>
+                        </div>
+                    `;
+                } else {
+                    feedbackHtml = `<p><span class="badge badge-completed">Feedback already submitted</span></p>`;
+                }
+
+                postDiv.innerHTML = `
+                    <h3>✅ Job Completed</h3>
+                    ${paymentHtml}
+                    <hr>
+                    ${feedbackHtml}
+                `;
+
+                // Attach payment button listener
+                const payBtn = document.getElementById('payNowBtn');
+                if (payBtn) {
+                    payBtn.addEventListener('click', function() {
+                        if (payment && payment.status === 'pending') {
+                            payment.status = 'paid_by_user';
+                            localStorage.setItem('payments', JSON.stringify(payments));
+                            alert('Payment successful! Waiting for admin release.');
+                            updateUI();
+                        }
+                    });
+                }
+
+                // Attach feedback button listener
+                const fbBtn = document.getElementById('submitFeedbackBtn');
+                if (fbBtn) {
+                    fbBtn.addEventListener('click', function() {
+                        const rating = document.getElementById('feedbackRating').value;
+                        const comment = document.getElementById('feedbackComment').value;
+                        const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+                        feedbacks.push({
+                            id: Date.now(),
+                            bookingId: booking.id,
+                            userId: currentUser.email,
+                            rating: parseInt(rating),
+                            comment: comment,
+                            date: new Date().toISOString()
+                        });
+                        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+                        alert('Feedback submitted. Thank you!');
+                        updateUI();
+                    });
+                }
+            } else {
+                postDiv.style.display = 'none';
+                notificationDiv.style.display = 'none';
+            }
+        }
+
+        // Refresh manually
+        window.refreshStatus = function() {
+            updateUI();
+        };
+
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+            updateUI();
+        }, 5000);
+
+        // Initial UI build
+        updateUI();
+    </script>
+</body>
+</html>

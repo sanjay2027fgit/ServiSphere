@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Worker Signup | Servisphere</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f7faff, #eaf4ff);
+        }
+
+        .signup-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 35px;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.15);
+            animation: fadeIn 0.7s ease;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            margin: 8px 0;
+            border-radius: 10px;
+            border: 1px solid #d0e2ff;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+            background: white;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            color: #1e293b;
+        }
+
+        input::placeholder {
+            color: #8aa8d8;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+
+        .otp-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e9f2ff;
+            color: #007bff;
+            border: 1px dashed #007bff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 10px;
+        }
+
+        .otp-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #007bff, #00bfff);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.35);
+            transition: 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0, 123, 255, 0.45);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* style for the dropdown arrow */
+        select {
+            color: #333;
+        }
+        option {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="signup-card">
+        <h2>Worker Signup</h2>
+
+        <form id="signupForm">
+            <input type="text" id="name" placeholder="Full Name" required>
+
+            <input type="email" id="email" placeholder="Email address" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <input type="text" id="aadhar" placeholder="Aadhar Number" required>
+
+            <!-- Job Role dropdown with all services (icons shown as text) -->
+            <select id="role" required>
+                <option value="" disabled selected>-- Select a job role --</option>
+                <option value="Plumber">🔧 Plumber</option>
+                <option value="Electrician">⚡ Electrician</option>
+                <option value="AC Mechanic">❄️ AC Mechanic</option>
+                <option value="Bike Mechanic">🏍️ Bike Mechanic</option>
+                <option value="Carpenter">🔨 Carpenter</option>
+                <option value="House Cleaning">🧹 House Cleaning</option>
+                <option value="Painter">🎨 Painter</option>
+                <option value="Refrigerator Repair">🌡️ Refrigerator Repair</option>
+                <option value="Washing Machine Repair">🧼 Washing Machine Repair</option>
+                <option value="RO Water Purifier Service">💧 RO Water Purifier</option>
+                <option value="Tutor">📚 Tutor</option>
+                <option value="Chef">🍳 Chef</option>
+                <option value="Gardener">🌿 Gardener</option>
+                <option value="Acting Driver">🚗 Acting Driver</option>
+                <option value="Masseur">💆 Masseur</option>
+                <option value="Beautician">💄 Beautician</option>
+                <option value="Delivery Partner">📦 Delivery Partner</option>
+                <option value="Load Man">📦 Load Man</option>
+            </select>
+
+            <input type="number" id="experience" placeholder="Experience (years)" required>
+
+            <button type="button" id="sendOtp" class="otp-btn">Send OTP</button>
+
+            <input type="text" id="otp" placeholder="Enter OTP" required>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        let generatedOtp;
+
+        document.getElementById('sendOtp').onclick = function () {
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            alert(`OTP sent: ${generatedOtp} (mock)`);
+        };
+
+        document.getElementById('signupForm').onsubmit = function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const aadhar = document.getElementById('aadhar').value;
+            const role = document.getElementById('role').value;  // from dropdown
+            const experience = document.getElementById('experience').value;
+            const otp = document.getElementById('otp').value;
+
+            if (otp !== generatedOtp) {
+                alert('Invalid OTP');
+                return;
+            }
+
+            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+
+            if (workers.find(w => w.email === email)) {
+                alert('Worker already exists');
+                return;
+            }
+
+            const newWorker = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                aadhar,
+                role,
+                experience,
+                rate: 200
+            };
+
+            workers.push(newWorker);
+            localStorage.setItem('workers', JSON.stringify(workers));
+
+            alert('Account created successfully! Please login.');
+            window.location.href = 'login.html';
+        };
+    </script>
+</body>
+</html>

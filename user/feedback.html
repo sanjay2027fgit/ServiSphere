@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Give Feedback</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+        .job-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        textarea { width: 100%; height: 80px; margin: 5px 0; }
+        select { margin: 5px 0; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Feedback for Completed Jobs</h2>
+    <div id="completedJobs"></div>
+    <button onclick="window.location.href='dashboard.html'">Back</button>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) window.location.href = 'login.html';
+
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]')
+            .filter(b => b.userId === currentUser.email && b.status === 'completed');
+        const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+        const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+
+        const container = document.getElementById('completedJobs');
+        if (bookings.length === 0) {
+            container.innerHTML = '<p>No completed jobs yet.</p>';
+        } else {
+            bookings.forEach(b => {
+                const worker = workers.find(w => w.id === b.workerId);
+                const existing = feedbacks.find(f => f.bookingId === b.id);
+                if (existing) {
+                    container.innerHTML += `
+                        <div class="job-card">
+                            <strong>${worker.name}</strong> - ${worker.role}<br>
+                            Feedback already given: Rating ${existing.rating}/5<br>
+                            "${existing.comment}"
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `
+                        <div class="job-card" id="fb-${b.id}">
+                            <strong>${worker.name}</strong> - ${worker.role}<br>
+                            <select id="rating-${b.id}">
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Good</option>
+                                <option value="3">3 - Average</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="1">1 - Terrible</option>
+                            </select>
+                            <textarea id="comment-${b.id}" placeholder="Write your feedback..."></textarea>
+                            <button onclick="submitFeedback(${b.id})">Submit Feedback</button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        window.submitFeedback = function(bookingId) {
+            const rating = document.getElementById(`rating-${bookingId}`).value;
+            const comment = document.getElementById(`comment-${bookingId}`).value;
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+            feedbacks.push({
+                id: Date.now(),
+                bookingId: bookingId,
+                userId: currentUser.email,
+                rating: parseInt(rating),
+                comment: comment,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+            alert('Feedback submitted. Thank you!');
+            window.location.reload();
+        };
+    </script>
+</body>
+</html>

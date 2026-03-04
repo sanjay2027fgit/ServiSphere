@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Worker · Elite Blue</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #0b1a2e 0%, #132b3f 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            margin: 0;
+            color: #e4f0ff;
+        }
+
+        /* main card container – virtualo glass panel */
+        .booking-panel {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(12, 27, 44, 0.7);
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
+            border: 1px solid rgba(64, 128, 255, 0.25);
+            border-radius: 3rem 3rem 2rem 2rem;
+            box-shadow: 0 30px 50px -20px rgba(0, 10, 30, 0.8), 0 0 0 1px rgba(0, 180, 255, 0.15) inset;
+            padding: 2.5rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            font-size: 2.3rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 1.8rem;
+            background: linear-gradient(130deg, #b3dcff, #6eb7ff, #3f9eff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-left: 5px solid #3f9eff;
+            padding-left: 1.2rem;
+            text-shadow: 0 2px 5px rgba(0, 80, 255, 0.3);
+        }
+
+        h2::after {
+            content: "✨";
+            font-size: 2rem;
+            filter: drop-shadow(0 0 6px #5f9eff);
+            opacity: 0.9;
+        }
+
+        /* worker list – grid layout for premium card feel */
+        #workersList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin: 2.2rem 0 2.5rem;
+        }
+
+        .worker-card {
+            background: rgba(18, 34, 58, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(90, 169, 255, 0.25);
+            border-radius: 2.2rem;
+            padding: 1.8rem 1.2rem 1.6rem 1.2rem;
+            box-shadow: 0 18px 30px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(70, 140, 255, 0.2) inset;
+            transition: transform 0.25s ease, box-shadow 0.3s, border-color 0.2s;
+            color: #e2ecff;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .worker-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: #3d9cff;
+            box-shadow: 0 28px 40px -10px #0a1e3a, 0 0 0 2px rgba(0, 162, 255, 0.4) inset;
+        }
+
+        /* subtle virtualo glow line */
+        .worker-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #0066ff20, #60a5ff10, #0066ff20);
+            border-radius: inherit;
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .worker-card:hover::before {
+            opacity: 0.8;
+        }
+
+        .worker-card strong {
+            font-size: 1.7rem;
+            font-weight: 600;
+            background: linear-gradient(145deg, #fff, #c1dcff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .worker-card strong::before {
+            content: "👤";
+            font-size: 1.3rem;
+            filter: drop-shadow(0 0 5px #3f9eff);
+        }
+
+        .worker-card > br + span {
+            display: none; /* hide awkward line break fallback */
+        }
+
+        /* role & experience line */
+        .worker-card .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.8rem 0 0.6rem;
+            font-size: 1.0rem;
+            background: rgba(0, 40, 80, 0.4);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            border: 1px solid #2f5480;
+            color: #c2deff;
+        }
+
+        .worker-card .role-badge {
+            background: #004a9f;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 2px 6px #003577;
+        }
+
+        .worker-card .exp-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .worker-card .exp-badge::before {
+            content: "⏱️";
+            font-size: 0.9rem;
+            filter: drop-shadow(0 0 3px cyan);
+        }
+
+        .worker-card .rate-info {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0.8rem 0 0.9rem;
+            background: linear-gradient(135deg, #b4dcff, #7eb9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-top: 1px dashed #2e6eb0;
+            padding-top: 0.7rem;
+        }
+
+        .rate-info::before {
+            content: "💰";
+            font-size: 1.3rem;
+        }
+
+        /* premium button style */
+        .book-btn {
+            background: linear-gradient(125deg, #0050b3, #003d80, #002b5c);
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.9rem 0.5rem;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 10px 18px -6px #001a33, 0 0 0 1px #3d9eff inset, 0 0 15px #0055ff80;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .book-btn:hover {
+            background: linear-gradient(125deg, #1a6fd0, #0050b0, #003f88);
+            box-shadow: 0 15px 25px -6px #000f2e, 0 0 0 2px #9acdff inset, 0 0 25px #3f9eff;
+            transform: scale(1.02);
+            letter-spacing: 1.5px;
+        }
+
+        .book-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px #001d3d;
+        }
+
+        .book-btn::after {
+            content: "⚡";
+            font-size: 1.3rem;
+            filter: drop-shadow(0 0 5px gold);
+        }
+
+        /* back to dashboard button – secondary premium */
+        .back-dash-btn {
+            background: rgba(16, 40, 68, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid #356f9e;
+            color: #dcf0ff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            padding: 0.9rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 10px 18px -6px #001a33, 0 0 0 1px #2b6cbb inset;
+            transition: 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 0.5rem;
+            width: auto;
+            border: 1px solid #4477bb;
+        }
+
+        .back-dash-btn:hover {
+            background: rgba(26, 58, 100, 0.8);
+            border-color: #7bb2ff;
+            box-shadow: 0 14px 22px -6px #02182f, 0 0 0 2px #a3cbff inset;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .back-dash-btn::before {
+            content: "◀";
+            font-size: 1.3rem;
+            filter: drop-shadow(0 0 4px white);
+        }
+
+        /* no workers placeholder */
+        #workersList:empty::after {
+            content: "🌟 No premium workers available at the moment.";
+            color: #9abde0;
+            font-size: 1.2rem;
+            background: #112542b0;
+            padding: 2rem;
+            border-radius: 3rem;
+            text-align: center;
+            border: 2px dashed #2f6396;
+            backdrop-filter: blur(8px);
+            grid-column: 1 / -1;
+        }
+
+        /* subtle virtualo floating orbs in background (pure css) */
+        .virtualo-bg-orb {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at 30% 30%, #0044ff30, #0022aa00 70%);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            z-index: -2;
+            filter: blur(70px);
+            pointer-events: none;
+        }
+
+        .virtualo-bg-orb2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: #001d9940;
+            bottom: -200px;
+            left: -200px;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* responsive fine-tuning */
+        @media (max-width: 500px) {
+            .booking-panel {
+                padding: 1.8rem 1rem;
+                border-radius: 2rem;
+            }
+            h2 {
+                font-size: 1.9rem;
+            }
+            .worker-card strong {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- virtualo background ambience -->
+    <div class="virtualo-bg-orb"></div>
+    <div class="virtualo-bg-orb2"></div>
+
+    <div class="booking-panel">
+        <h2>Book a Worker</h2>
+        <div id="workersList"></div>
+        <!-- premium back button -->
+        <button class="back-dash-btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    </div>
+
+    <script>
+        (function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const workers = JSON.parse(localStorage.getItem('workers')) || [];
+            const listDiv = document.getElementById('workersList');
+            listDiv.innerHTML = ''; // Clear if any
+
+            if (workers.length === 0) {
+                // let css :empty show fallback, but we also ensure no empty card artifacts
+                // we can optionally add a placeholder, but we keep consistent with :empty pseudo
+                // no workers -> do nothing, the :empty pseudo will show message.
+                // but we also can set a small dummy to maintain height? not needed.
+                // However, we want to make sure the container is truly empty for :empty to work.
+                // workers.length === 0, we don't append anything.
+            } else {
+                workers.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'worker-card';
+
+                    // structure with meta badges for premium look
+                    const nameStrong = document.createElement('strong');
+                    nameStrong.textContent = w.name || 'Unnamed';
+
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'meta-row';
+
+                    const roleSpan = document.createElement('span');
+                    roleSpan.className = 'role-badge';
+                    roleSpan.textContent = w.role || 'general';
+
+                    const expSpan = document.createElement('span');
+                    expSpan.className = 'exp-badge';
+                    expSpan.textContent = (w.experience ? w.experience + ' yrs' : '— yrs');
+
+                    metaDiv.appendChild(roleSpan);
+                    metaDiv.appendChild(expSpan);
+
+                    const rateDiv = document.createElement('div');
+                    rateDiv.className = 'rate-info';
+                    // use w.rate if exists, fallback 200
+                    const rateValue = (w.rate !== undefined && w.rate !== null) ? w.rate : 200;
+                    rateDiv.textContent = `₹${rateValue}/hr`;
+
+                    const bookButton = document.createElement('button');
+                    bookButton.className = 'book-btn';
+                    bookButton.textContent = 'Book now';
+                    // attach worker id in a data attribute, but we use onclick with id
+                    // we'll keep the onclick as a global function; but also we can set onclick here
+                    // to avoid global function reliance? easier keep existing pattern but ensure id exists.
+                    // but we will still define window.bookWorker. Use w.id (make sure workers have id)
+                    const workerId = w.id ?? `temp-${Date.now()}-${Math.random()}`;
+                    // ensure w.id exists, if not fallback but we want consistency
+                    // original code used w.id, we'll keep that property.
+                    
+                    // append all
+                    div.appendChild(nameStrong);
+                    div.appendChild(metaDiv);
+                    div.appendChild(rateDiv);
+                    div.appendChild(bookButton);
+
+                    // set button onclick within closure
+                    bookButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        // get worker id from the worker object in this scope
+                        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                        const newBooking = {
+                            id: Date.now(),
+                            userId: currentUser.email,
+                            workerId: workerId,   // use captured workerId
+                            status: 'pending',
+                            rate: rateValue,      // use actual rate from worker
+                            createdAt: new Date().toISOString()
+                        };
+                        bookings.push(newBooking);
+                        localStorage.setItem('bookings', JSON.stringify(bookings));
+                        alert('✨ Booking request sent! Worker will be notified.');
+                        window.location.href = 'dashboard.html';
+                    });
+
+                    listDiv.appendChild(div);
+                });
+            }
+
+            // keep global function for any inline onclick (though we use event listeners now, but just in case)
+            window.bookWorker = function(workerId) {
+                // this is a fallback if someone uses onclick attribute – we use modern listeners, but we define it.
+                const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                const worker = workers.find(w => w.id == workerId);
+                const rate = worker ? (worker.rate || 200) : 200;
+                const newBooking = {
+                    id: Date.now(),
+                    userId: currentUser.email,
+                    workerId: workerId,
+                    status: 'pending',
+                    rate: rate,
+                    createdAt: new Date().toISOString()
+                };
+                bookings.push(newBooking);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                alert('✨ Booking sent! (via legacy)');
+                window.location.href = 'dashboard.html';
+            };
+        })();
+    </script>
+    <!-- ensure that if there are any inline book-worker buttons from leftover template they use the global,
+         but we removed inline html, so it's fine.  -->
+</body>
+</html>

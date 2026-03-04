@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker · Hardwork Elite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #121212;
+            color: #e0d6c9;
+            padding: 28px 30px;
+            min-height: 100vh;
+        }
+
+        /* industrial texture background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                repeating-linear-gradient(45deg, rgba(180, 130, 50, 0.02) 0px, rgba(180, 130, 50, 0.02) 2px, transparent 2px, transparent 6px),
+                radial-gradient(circle at 20% 30%, rgba(100, 70, 20, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* premium header with metallic effect */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px 30px;
+            background: #1e1b16;
+            border: 1px solid #b87c3a;
+            border-radius: 60px;
+            box-shadow: 0 15px 30px -10px #b87c3a40, 0 0 0 1px #e4a44e inset;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 600;
+            background: linear-gradient(145deg, #f5cb8b, #c98f3a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 8px #b87c3a80;
+            letter-spacing: -0.5px;
+        }
+
+        .header .badge {
+            background: #b87c3a;
+            color: #0f0f0f;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            border: 1px solid #f0b45e;
+            box-shadow: 0 0 12px #e4a44e;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 2px solid #b87c3a;
+            color: #f0c38e;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .logout-btn:hover {
+            background: #b87c3a;
+            color: #0f0f0f;
+            box-shadow: 0 0 25px #f1b157;
+            border-color: #f5d39c;
+        }
+
+        /* worker info bar */
+        .worker-info {
+            background: #1f1c17;
+            border-left: 6px solid #d99c47;
+            padding: 15px 25px;
+            border-radius: 18px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 14px #0a0a0a;
+        }
+
+        .worker-info p {
+            font-size: 1.2rem;
+            color: #cfb38c;
+        }
+
+        .worker-info strong {
+            color: #f5d39c;
+            font-weight: 700;
+        }
+
+        /* earnings premium panel */
+        .earnings-panel {
+            background: #1e1a14;
+            border: 1px solid #b87c3a;
+            border-radius: 40px;
+            padding: 28px 32px;
+            margin-bottom: 45px;
+            box-shadow: 0 20px 30px -12px #b87c3a80, inset 0 0 25px #b87c3a30;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .earnings-stats {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ad8e63;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f5cb8b;
+            text-shadow: 0 0 15px #b87c3a;
+            line-height: 1.2;
+        }
+
+        .stat-value small {
+            font-size: 1rem;
+            color: #ad8e63;
+        }
+
+        .earnings-action {
+            display: flex;
+            gap: 20px;
+        }
+
+        .elite-btn {
+            background: #b87c3a;
+            border: none;
+            color: #0f0f0f;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 14px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #6d4c24, 0 10px 25px #b87c3a80;
+            transition: 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #fad39c;
+        }
+
+        .elite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #6d4c24, 0 15px 30px #f1b157;
+        }
+
+        .elite-btn.secondary {
+            background: #2f2a22;
+            color: #e5c9a2;
+            box-shadow: 0 5px 0 #1f1b14, 0 8px 20px #b87c3a40;
+            border-color: #9e7c52;
+        }
+
+        /* section titles */
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin: 40px 0 25px 0;
+            border-left: 6px solid #b87c3a;
+            padding-left: 18px;
+            color: #efdbb0;
+            text-shadow: 0 0 6px #b87c3a;
+        }
+
+        /* card grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .job-card {
+            background: #1b1813;
+            border: 1px solid #b87c3a60;
+            border-radius: 28px;
+            padding: 22px;
+            box-shadow: 0 12px 22px -8px #0f0f0f, 0 0 0 1px #b87c3a20 inset;
+            transition: transform 0.2s;
+        }
+
+        .job-card:hover {
+            transform: scale(1.01);
+            border-color: #e4a44e;
+            box-shadow: 0 18px 28px -10px #b87c3a;
+        }
+
+        .job-card p {
+            margin: 8px 0;
+            color: #cfbc9f;
+        }
+
+        .job-card strong {
+            color: #f5cb8b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            background: #2a241e;
+            color: #cfa767;
+            border: 1px solid #b87c3a;
+        }
+
+        .job-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .job-actions button, .job-actions a {
+            background: #b87c3a;
+            color: #0f0f0f;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid #fad39c;
+            transition: 0.1s;
+            box-shadow: 0 4px 0 #6d4c24;
+        }
+
+        .job-actions button:hover, .job-actions a:hover {
+            background: #dba454;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #6d4c24;
+        }
+
+        .empty-message {
+            background: #1b1813;
+            border: 1px dashed #b87c3a80;
+            border-radius: 28px;
+            padding: 35px;
+            text-align: center;
+            color: #8f806b;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: right;
+            color: #6a5e4d;
+            font-size: 0.8rem;
+            border-top: 1px solid #b87c3a40;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h1>⚒️ WORKER ELITE</h1>
+            <span class="badge">HARDWORK</span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">SIGN OUT</button>
+    </div>
+
+    <!-- worker info (dynamic) -->
+    <div class="worker-info" id="workerInfo"></div>
+
+    <!-- Earnings Overview Panel -->
+    <div class="earnings-panel">
+        <div class="earnings-stats">
+            <div class="stat-item">
+                <div class="stat-label">Available for Payout</div>
+                <div class="stat-value" id="availableEarnings">₹0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Approved</div>
+                <div class="stat-value" id="totalApproved">₹0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Pending (user)</div>
+                <div class="stat-value" id="pendingUser">₹0</div>
+            </div>
+        </div>
+        <div class="earnings-action">
+            <button class="elite-btn" onclick="window.location.href='earnings.html'">💰 VIEW EARNINGS</button>
+            <button class="elite-btn secondary" onclick="requestPayout()">📤 REQUEST PAYOUT</button>
+        </div>
+    </div>
+
+    <!-- Pending Bookings -->
+    <h2 class="section-title">⏳ PENDING BOOKINGS</h2>
+    <div class="cards-grid" id="pendingBookings"></div>
+
+    <!-- Active Jobs -->
+    <h2 class="section-title">🔨 ACTIVE JOBS</h2>
+    <div class="cards-grid" id="activeJobs"></div>
+
+    <footer>
+        <span id="timestamp"></span> · every shift counts
+    </footer>
+
+    <script>
+        (function() {
+            // Auth check
+            const currentWorker = JSON.parse(localStorage.getItem('currentWorker'));
+            if (!currentWorker) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Display worker info
+            document.getElementById('workerInfo').innerHTML = `
+                <p><strong>${currentWorker.name || currentWorker.email}</strong> · ${currentWorker.role || 'Worker'} · ${currentWorker.experience || 0} years experience</p>
+            `;
+
+            // Load data
+            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const payments = JSON.parse(localStorage.getItem('payments') || '[]');
+            const workerId = currentWorker.id;
+
+            // Filter bookings for this worker
+            const workerBookings = bookings.filter(b => b.workerId === workerId);
+            const pendingB = workerBookings.filter(b => b.status === 'pending');
+            const activeB = workerBookings.filter(b => b.status !== 'pending' && b.status !== 'completed');
+
+            // Earnings calculations
+            const workerPayments = payments.filter(p => p.workerId === workerId);
+            let available = 0;  // paid_by_user
+            let approved = 0;   // approved
+            let pendingUser = 0; // pending (waiting for user payment)
+
+            workerPayments.forEach(p => {
+                if (p.status === 'paid_by_user') available += p.amount;
+                else if (p.status === 'approved') approved += p.amount;
+                else if (p.status === 'pending') pendingUser += p.amount;
+            });
+
+            document.getElementById('availableEarnings').innerText = `₹${available}`;
+            document.getElementById('totalApproved').innerText = `₹${approved}`;
+            document.getElementById('pendingUser').innerText = `₹${pendingUser}`;
+
+            // Helper to get user email (optional)
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            function getUserEmail(userId) {
+                const u = users.find(u => u.email === userId);
+                return u ? u.email : userId;
+            }
+
+            // Render pending bookings
+            const pendingDiv = document.getElementById('pendingBookings');
+            if (pendingB.length === 0) {
+                pendingDiv.innerHTML = '<div class="empty-message">No pending bookings</div>';
+            } else {
+                pendingDiv.innerHTML = pendingB.map(b => {
+                    const userEmail = getUserEmail(b.userId);
+                    return `
+                        <div class="job-card">
+                            <p><strong>Booking #${b.id}</strong></p>
+                            <p>👤 User: ${userEmail}</p>
+                            <p>⏱️ Created: ${b.createdAt ? b.createdAt.slice(0,10) : '—'}</p>
+                            <div class="job-actions">
+                                <button onclick="acceptJob(${b.id})">✅ Accept</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render active jobs
+            const activeDiv = document.getElementById('activeJobs');
+            if (activeB.length === 0) {
+                activeDiv.innerHTML = '<div class="empty-message">No active jobs</div>';
+            } else {
+                activeDiv.innerHTML = activeB.map(b => {
+                    const userEmail = getUserEmail(b.userId);
+                    let actionButton = '';
+                    if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
+                        actionButton = `<a href="job-details.html?bookingId=${b.id}">🔧 Update Status</a>`;
+                    }
+                    return `
+                        <div class="job-card">
+                            <p><strong>Booking #${b.id}</strong></p>
+                            <p>👤 User: ${userEmail}</p>
+                            <p>📌 Status: <span class="badge">${b.status.replace(/_/g, ' ')}</span></p>
+                            <div class="job-actions">
+                                ${actionButton}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Accept job function
+            window.acceptJob = function(bookingId) {
+                const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                const index = bookings.findIndex(b => b.id === bookingId);
+                if (index !== -1 && bookings[index].status === 'pending') {
+                    bookings[index].status = 'accepted';
+                    localStorage.setItem('bookings', JSON.stringify(bookings));
+                    alert('Job accepted!');
+                    window.location.reload();
+                }
+            };
+
+            // Request payout function (simplified – can be extended)
+            window.requestPayout = function() {
+                if (available === 0) {
+                    alert('No funds available for payout.');
+                    return;
+                }
+                // Create a payout request (similar to earnings page logic)
+                const payoutRequests = JSON.parse(localStorage.getItem('payoutRequests') || '[]');
+                const existing = payoutRequests.find(r => r.workerId === workerId && r.status === 'pending');
+                if (existing) {
+                    alert('You already have a pending payout request.');
+                    return;
+                }
+                const newRequest = {
+                    id: Date.now(),
+                    workerId: workerId,
+                    amount: available,
+                    status: 'pending',
+                    requestedAt: new Date().toISOString()
+                };
+                payoutRequests.push(newRequest);
+                localStorage.setItem('payoutRequests', JSON.stringify(payoutRequests));
+                alert(`Payout request of ₹${available} sent to special admin.`);
+            };
+
+            // Timestamp
+            document.getElementById('timestamp').innerText = new Date().toLocaleString();
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('currentWorker');
+                window.location.href = '../index.html';
+            });
+        })();
+    </script>
+</body>
+</html>

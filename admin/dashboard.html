@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN · Servisphere Elite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: #0a0c0e;
+            color: #f0e9e9;
+            padding: 28px 32px;
+            min-height: 100vh;
+        }
+
+        /* glass background overlay */
+        .glass-panel {
+            background: rgba(18, 22, 28, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 32px;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(212, 175, 55, 0.1) inset;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 18px 28px;
+            background: rgba(12, 15, 20, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            border: 1px solid #b8860b30;
+            box-shadow: 0 10px 30px -5px #b8860b20;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 500;
+            background: linear-gradient(145deg, #f9e0a0, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 20px #ffd70040;
+        }
+
+        .header .badge {
+            background: #b8860b;
+            color: #0b0b0b;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border: 1px solid #f1c40f;
+            box-shadow: 0 0 15px #ffbf00;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1.5px solid #b8860b;
+            color: #f3d37c;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 10px #b8860b;
+            backdrop-filter: blur(4px);
+        }
+
+        .logout-btn:hover {
+            background: #b8860b;
+            color: #0b0b0b;
+            box-shadow: 0 0 25px #f1c40f;
+            border-color: #f7dc6f;
+        }
+
+        /* earnings premium card */
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 45px;
+        }
+
+        .earning-card {
+            background: linear-gradient(145deg, #1c2128, #13171f);
+            border: 1px solid #b8860b;
+            border-radius: 32px;
+            padding: 28px 25px;
+            box-shadow: 0 20px 35px -5px #b8860b30, 0 0 0 1px #d4af3760 inset;
+            transition: transform 0.2s;
+        }
+
+        .earning-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 45px -5px #ffb34780;
+        }
+
+        .earning-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #b19b6b;
+            margin-bottom: 12px;
+        }
+
+        .earning-value {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: #f5e6b3;
+            text-shadow: 0 0 15px #f1c40f80;
+            line-height: 1.2;
+        }
+
+        .earning-sub {
+            font-size: 1rem;
+            color: #9e8b5f;
+            margin-top: 8px;
+        }
+
+        /* dashboard grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .data-card {
+            background: rgba(16, 20, 26, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #b8860b40;
+            border-radius: 36px;
+            padding: 24px 22px;
+            box-shadow: 0 15px 30px -10px #000000cc, 0 0 0 1px #d4af3720 inset;
+        }
+
+        .data-card h3 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: #f3dbbc;
+            border-left: 6px solid #b8860b;
+            padding-left: 22px;
+            margin-bottom: 22px;
+            text-shadow: 0 0 8px #b8860b;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 24px;
+            background: #0e1219;
+            border: 1px solid #5f4c1a;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #e2dac8;
+        }
+
+        th {
+            background: #1e261f;
+            color: #f5d742;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            padding: 16px 10px;
+            border-bottom: 2px solid #b8860b;
+        }
+
+        td {
+            padding: 14px 10px;
+            border-bottom: 1px solid #2f2a1f;
+            background: #11161e;
+        }
+
+        tr:hover td {
+            background: #1d1f16;
+            color: #fff8e7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background: #2a2a1c;
+            color: #f3c26b;
+            border: 1px solid #a67c1e;
+        }
+
+        .empty-msg {
+            color: #9a947c;
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .footer-note {
+            margin-top: 45px;
+            text-align: right;
+            color: #8b7f62;
+            font-size: 0.8rem;
+            border-top: 1px dashed #b8860b60;
+            padding-top: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h1>⚜️ SERVISPHERE · ELITE ADMIN</h1>
+            <span class="badge">root access</span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">SIGN OUT</button>
+    </div>
+
+    <!-- Earnings Overview - Premium Cards -->
+    <div class="earnings-grid">
+        <div class="earning-card">
+            <div class="earning-label">TOTAL REVENUE</div>
+            <div class="earning-value" id="totalRevenue">₹0</div>
+            <div class="earning-sub">lifetime platform earnings</div>
+        </div>
+        <div class="earning-card">
+            <div class="earning-label">PENDING PAYOUTS</div>
+            <div class="earning-value" id="pendingPayouts">₹0</div>
+            <div class="earning-sub">awaiting special admin release</div>
+        </div>
+        <div class="earning-card">
+            <div class="earning-label">COMPLETED PAYMENTS</div>
+            <div class="earning-value" id="completedPayouts">₹0</div>
+            <div class="earning-sub">released to workers</div>
+        </div>
+    </div>
+
+    <!-- Main Data Grid -->
+    <div class="dashboard-grid">
+        <!-- Users -->
+        <div class="data-card">
+            <h3>👥 USERS</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Email</th></tr></thead>
+                    <tbody id="usersBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Workers -->
+        <div class="data-card">
+            <h3>🛠️ WORKERS</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Email</th><th>Role</th><th>Experience</th></tr></thead>
+                    <tbody id="workersBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Bookings -->
+        <div class="data-card">
+            <h3>📋 BOOKINGS</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>ID</th><th>User</th><th>Worker</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="bookingsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Payments -->
+        <div class="data-card">
+            <h3>💰 PAYMENTS</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>ID</th><th>Booking</th><th>Worker</th><th>Amount</th><th>Status</th></tr></thead>
+                    <tbody id="paymentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Feedback -->
+        <div class="data-card">
+            <h3>⭐ FEEDBACK</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Booking</th><th>User</th><th>Rating</th><th>Comment</th></tr></thead>
+                    <tbody id="feedbackBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        ⏱️ last synchronized · <span id="timestamp"></span>  |  all operations logged
+    </div>
+
+    <script>
+        (function() {
+            // Admin authentication
+            if (!localStorage.getItem('currentAdmin')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load data
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const workers = JSON.parse(localStorage.getItem('workers') || '[]');
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const payments = JSON.parse(localStorage.getItem('payments') || '[]');
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+
+            // Helper: escape HTML
+            const escape = (str) => String(str || '').replace(/[&<>"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
+            });
+
+            // ---- EARNINGS CALCULATIONS ----
+            let totalRevenue = 0;
+            let pendingPayouts = 0;      // paid_by_user (user paid, waiting for special admin)
+            let completedPayouts = 0;     // approved (released to worker)
+
+            payments.forEach(p => {
+                if (p.amount) {
+                    totalRevenue += p.amount;
+                    if (p.status === 'paid_by_user') pendingPayouts += p.amount;
+                    if (p.status === 'approved') completedPayouts += p.amount;
+                }
+            });
+
+            document.getElementById('totalRevenue').innerText = `₹${totalRevenue}`;
+            document.getElementById('pendingPayouts').innerText = `₹${pendingPayouts}`;
+            document.getElementById('completedPayouts').innerText = `₹${completedPayouts}`;
+
+            // ---- USERS TABLE ----
+            const usersBody = document.getElementById('usersBody');
+            usersBody.innerHTML = users.length 
+                ? users.map(u => `<tr><td>${escape(u.email)}</td></tr>`).join('')
+                : '<tr><td class="empty-msg">No users</td></tr>';
+
+            // ---- WORKERS TABLE ----
+            const workersBody = document.getElementById('workersBody');
+            workersBody.innerHTML = workers.length
+                ? workers.map(w => `<tr><td>${escape(w.email)}</td><td>${escape(w.role)}</td><td>${escape(w.experience)} yrs</td></tr>`).join('')
+                : '<tr><td colspan="3" class="empty-msg">No workers</td></tr>';
+
+            // ---- BOOKINGS TABLE ----
+            const bookingsBody = document.getElementById('bookingsBody');
+            if (bookings.length === 0) {
+                bookingsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No bookings</td></tr>';
+            } else {
+                bookingsBody.innerHTML = bookings.map(b => `
+                    <tr>
+                        <td>${b.id}</td>
+                        <td>${escape(b.userId)}</td>
+                        <td>${b.workerId}</td>
+                        <td><span class="badge">${escape(b.status)}</span></td>
+                        <td>${b.createdAt ? b.createdAt.slice(0,10) : '—'}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // ---- PAYMENTS TABLE ----
+            const paymentsBody = document.getElementById('paymentsBody');
+            if (payments.length === 0) {
+                paymentsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No payments</td></tr>';
+            } else {
+                paymentsBody.innerHTML = payments.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.bookingId}</td>
+                        <td>${p.workerId}</td>
+                        <td>₹${p.amount}</td>
+                        <td><span class="badge">${escape(p.status)}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            // ---- FEEDBACK TABLE ----
+            const feedbackBody = document.getElementById('feedbackBody');
+            if (feedbacks.length === 0) {
+                feedbackBody.innerHTML = '<tr><td colspan="4" class="empty-msg">No feedback</td></tr>';
+            } else {
+                feedbackBody.innerHTML = feedbacks.map(f => `
+                    <tr>
+                        <td>${f.bookingId}</td>
+                        <td>${escape(f.userId)}</td>
+                        <td>${f.rating}/5</td>
+                        <td>“${escape(f.comment).substring(0,40)}${f.comment && f.comment.length>40 ? '…' : ''}”</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Timestamp
+            document.getElementById('timestamp').innerText = new Date().toLocaleString();
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('currentAdmin');
+                window.location.href = '../index.html';
+            });
+        })();
+    </script>
+</body>
+</html>

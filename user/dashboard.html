@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard · Elite Gold & Silver</title>
+    <!-- modern font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Emergency theme class (red/blue) */
+        body.emergency-mode {
+            background: radial-gradient(circle at 80% 10%, #2b0f0f, #0a0f2b 90%) !important;
+        }
+        body.emergency-mode .top-bar {
+            border-color: #ff4d4d !important;
+            box-shadow: 0 0 30px #ff000080, 0 0 0 1px #ff4d4d inset !important;
+        }
+        body.emergency-mode .logout-btn {
+            border-color: #ff8888 !important;
+            color: #ffcccc !important;
+            box-shadow: 0 0 15px #ff4d4d !important;
+        }
+        body.emergency-mode .logout-btn:hover {
+            background: #ff4d4d !important;
+            color: #0a0f2b !important;
+            border-color: #ffb3b3 !important;
+        }
+        body.emergency-mode .premium-btn,
+        body.emergency-mode .more-btn,
+        body.emergency-mode .book-now-btn,
+        body.emergency-mode button {
+            background: linear-gradient(145deg, #4d1a1a, #1a1a4d) !important;
+            border-color: #ff6666 !important;
+            color: #ffe6e6 !important;
+            box-shadow: 0 0 20px #ff3333 !important;
+        }
+        body.emergency-mode .premium-btn:hover,
+        body.emergency-mode .more-btn:hover,
+        body.emergency-mode .book-now-btn:hover,
+        body.emergency-mode button:hover {
+            background: #ff4d4d !important;
+            color: #0a0f2b !important;
+            border-color: #ffb3b3 !important;
+            box-shadow: 0 0 30px #ff6666 !important;
+        }
+        body.emergency-mode .card {
+            border-color: #ff6666 !important;
+            box-shadow: 0 20px 40px -12px #330000, 0 0 0 1px #ff6666 inset !important;
+        }
+        body.emergency-mode .card h3 {
+            background: linear-gradient(135deg, #ffb3b3, #b3b3ff) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            color: transparent !important;
+        }
+        body.emergency-mode .worker-card,
+        body.emergency-mode .booking-card {
+            border-color: #ff8888 !important;
+        }
+        body.emergency-mode .icon-wrapper {
+            background: #4d1a1a !important;
+            border-color: #ff6666 !important;
+            color: #ffb3b3 !important;
+        }
+        body.emergency-mode .service-card:hover .icon-wrapper {
+            background: #ff4d4d !important;
+            color: #0a0f2b !important;
+        }
+        body.emergency-mode #userName {
+            background: linear-gradient(145deg, #ffb3b3, #b3b3ff) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+        }
+        /* Emergency button */
+        #emergencyBtn {
+            background: #cc0000;
+            border: 2px solid #ff9999;
+            color: white;
+            font-weight: 700;
+            padding: 0.6rem 1.8rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 20px #ff0000;
+            transition: 0.2s;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            margin-right: 1rem;
+        }
+        #emergencyBtn:hover {
+            background: #ff4d4d;
+            box-shadow: 0 0 30px #ff6666;
+            transform: scale(1.02);
+        }
+        body.emergency-mode #emergencyBtn {
+            background: #004d99;
+            border-color: #99ccff;
+            box-shadow: 0 0 20px #0066ff;
+        }
+        body.emergency-mode #emergencyBtn:hover {
+            background: #0066cc;
+        }
+
+        /* Base styles (unchanged from your premium theme) */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at 80% 10%, #2b2b20, #0a0a0f 90%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #ede7d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 12, 18, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 4rem;
+            padding: 0.9rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 30px -10px #000, 0 0 0 1px rgba(255, 215, 0, 0.2) inset, 0 0 20px #ffd70020;
+        }
+
+        #userInfo {
+            font-size: 1.2rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #userName {
+            font-weight: 600;
+            background: linear-gradient(145deg, #f5e7b2, #ffdb7c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 8px #ffd700;
+        }
+
+        #userEmail {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            color: #d6c48a;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 2px solid #c0a65a;
+            color: #f3e3b5;
+            font-weight: 600;
+            padding: 0.6rem 2rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px #b49450, 0 4px 12px black;
+            backdrop-filter: blur(5px);
+            transition: 0.2s;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn:hover {
+            background: #dbb35c;
+            color: #0a0804;
+            border-color: #ffea9e;
+            box-shadow: 0 0 25px #ffbf00, 0 6px 14px black;
+            transform: scale(1.02);
+        }
+
+        .action-strip {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .premium-btn {
+            background: linear-gradient(145deg, #2d2a23, #1f1c14);
+            border: 2px solid #a89058;
+            color: #f5e7c8;
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 15px #927f40, 0 5px 10px #00000080;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .premium-btn:hover {
+            background: linear-gradient(145deg, #4a3f2b, #2f281b);
+            border-color: #e5c468;
+            box-shadow: 0 0 30px #e5b73b, 0 8px 18px black;
+            transform: scale(1.02);
+            color: #fff2d2;
+        }
+
+        .services-section {
+            margin-bottom: 3rem;
+        }
+        .section-heading {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin: 2rem 0 1.5rem 0;
+            background: linear-gradient(135deg, #fff2cf, #e0c06b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        .service-card {
+            background: rgba(18, 18, 24, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 2.5rem;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 20px 40px -12px black, 0 0 0 1px rgba(255, 215, 0, 0.2) inset;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .service-card:hover {
+            border-color: #f5cb5c;
+            box-shadow: 0 0 30px #ffd70040, 0 0 0 1px #ffd966 inset;
+            transform: translateY(-6px);
+        }
+        .icon-wrapper {
+            background: #3a311e;
+            width: 64px;
+            height: 64px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: #ffdb7c;
+            margin-bottom: 1.5rem;
+            border: 1px solid #d4a13e;
+        }
+        .service-card:hover .icon-wrapper {
+            background: #c9a459;
+            color: #0a0804;
+        }
+        .service-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            color: #fff2cf;
+        }
+        .service-desc {
+            color: #c4b28c;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.8rem;
+            flex: 1;
+        }
+        .book-now-btn {
+            background: linear-gradient(145deg, #2f2819, #1e1a10);
+            border: 2px solid #a5874b;
+            color: #f7e3b6;
+            font-weight: 600;
+            padding: 0.8rem 1rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px #8b763a;
+            transition: 0.2s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .book-now-btn:hover {
+            background: #c9a459;
+            border-color: #ffd877;
+            color: #0a0701;
+            box-shadow: 0 0 25px #fcb42e;
+        }
+
+        .service-card.extra-service.hidden-service {
+            display: none;
+        }
+        .more-btn-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0 2rem;
+        }
+        .more-btn {
+            background: transparent;
+            border: 2px solid #a89058;
+            color: #f5e7c8;
+            font-weight: 600;
+            padding: 0.8rem 3rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 15px #927f40;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        .more-btn:hover {
+            background: #dbb35c;
+            color: #0a0804;
+            border-color: #ffea9e;
+            box-shadow: 0 0 30px #ffbf00;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(18, 18, 24, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 2.5rem;
+            padding: 2rem 1.8rem;
+            box-shadow: 0 20px 40px -12px black, 0 0 0 1px rgba(255, 215, 0, 0.2) inset, 0 0 30px #ffd70015;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            border-color: #d4af37aa;
+            box-shadow: 0 30px 60px -15px black, 0 0 0 1px #ffe066 inset, 0 0 40px #ffd70040;
+        }
+
+        .card h3 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff2cf, #e0c06b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #aa8e4e60;
+            padding-bottom: 0.8rem;
+        }
+
+        .worker-card, .booking-card {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #b4944c;
+            border-radius: 2rem;
+            padding: 1.4rem 1.6rem;
+            margin: 1rem 0;
+            box-shadow: 0 8px 20px -5px #000, 0 0 0 1px #ddb760 inset;
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+        }
+
+        .worker-card:hover, .booking-card:hover {
+            border-color: #f5cb5c;
+            box-shadow: 0 12px 28px -8px black, 0 0 0 1px #ffd966 inset, 0 0 25px #ffbe2e;
+        }
+
+        .worker-card strong, .booking-card strong {
+            color: #ffdf9e;
+            font-weight: 600;
+            text-shadow: 0 0 4px #daa520;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid;
+            backdrop-filter: blur(2px);
+        }
+
+        .badge-pending {
+            background: #3a311e;
+            border-color: #d4a13e;
+            color: #ffd966;
+            box-shadow: 0 0 10px #ffb700;
+        }
+
+        .badge-paid {
+            background: #1b4030;
+            border-color: #58b987;
+            color: #b7ebc2;
+            box-shadow: 0 0 8px #2ecc71;
+        }
+
+        .badge-completed {
+            background: #1e334d;
+            border-color: #6d94c0;
+            color: #b3d9ff;
+            box-shadow: 0 0 8px #3f9eff;
+        }
+
+        .feedback-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(20, 18, 12, 0.7);
+            border-radius: 1.5rem;
+            border: 1px solid #997f44;
+        }
+
+        select, textarea {
+            background: rgba(10, 8, 5, 0.8);
+            border: 1px solid #b4944c;
+            border-radius: 2rem;
+            padding: 0.7rem 1.2rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #f5ddb1;
+            width: 100%;
+            margin: 0.5rem 0 1rem;
+            outline: none;
+            box-shadow: 0 0 8px #66561e, inset 0 2px 6px black;
+            transition: 0.2s;
+        }
+
+        select:focus, textarea:focus {
+            border-color: #ffcf5a;
+            box-shadow: 0 0 15px #ffbe2e, inset 0 2px 8px black;
+            background: #1f1a0e;
+        }
+
+        button, .btn {
+            background: linear-gradient(145deg, #2f2819, #1e1a10);
+            border: 2px solid #a5874b;
+            color: #f7e3b6;
+            font-weight: 600;
+            padding: 0.6rem 1.6rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px #8b763a, 0 4px 8px black;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            margin: 0.25rem 0.5rem 0.25rem 0;
+        }
+
+        button:hover, .btn:hover {
+            background: #c9a459;
+            border-color: #ffd877;
+            color: #0a0701;
+            box-shadow: 0 0 25px #fcb42e, 0 6px 12px black;
+            transform: scale(1.02);
+        }
+
+        .full-width-section {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes goldPulse {
+            0% { border-color: rgba(212, 175, 55, 0.4); }
+            50% { border-color: rgba(255, 215, 0, 0.9); box-shadow: 0 0 30px #ffd70040; }
+            100% { border-color: rgba(212, 175, 55, 0.4); }
+        }
+
+        .card {
+            animation: goldPulse 6s infinite ease-in-out;
+        }
+        .filter-hint {
+            color: #ffdb7c;
+            font-size: 0.9rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- top bar with user & logout & emergency button -->
+    <div class="top-bar">
+        <div id="userInfo">
+            👤
+            <span>Logged in as:</span>
+            <strong id="userName"></strong>
+            <span id="userEmail" style="font-size:0.95rem; opacity:0.8;"></span>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button id="emergencyBtn"><i class="fa-solid fa-exclamation-triangle"></i> EMERGENCY MODE</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- quick action strip -->
+    <div class="action-strip">
+        <button class="premium-btn" onclick="window.location.href='book.html'">📅 Book a Worker (legacy)</button>
+    </div>
+
+    <!-- Available Services Section with grid (expanded) -->
+    <div class="services-section">
+        <h1 class="section-heading"><i class="fa-regular fa-grid-2"></i> Available Services</h1>
+        <div class="services-grid" id="servicesGrid"></div>
+        <div class="more-btn-container">
+            <button class="more-btn" id="toggleMoreBtn"><i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- main grid: left column (available workers + bookings) and right column (completed jobs) -->
+    <div class="dashboard-grid">
+        <!-- left column: workers and my bookings -->
+        <div class="left-col">
+            <div class="card">
+                <h3>🛠️ Available Workers</h3>
+                <div id="filterHint" class="filter-hint"></div>
+                <div id="workersList"></div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h3>📋 My Bookings</h3>
+                <div id="bookingsList"></div>
+            </div>
+        </div>
+
+        <!-- right column: completed jobs -->
+        <div class="right-col">
+            <div class="card full-width-section" style="height: fit-content;">
+                <h3>✅ Completed Jobs – Action Required</h3>
+                <div id="completedJobs"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- EMERGENCY MODE TOGGLE ----------
+        const emergencyBtn = document.getElementById('emergencyBtn');
+        emergencyBtn.addEventListener('click', () => {
+            document.body.classList.toggle('emergency-mode');
+            // Change button icon/text
+            if (document.body.classList.contains('emergency-mode')) {
+                emergencyBtn.innerHTML = '<i class="fa-solid fa-shield"></i> NORMAL MODE';
+            } else {
+                emergencyBtn.innerHTML = '<i class="fa-solid fa-exclamation-triangle"></i> EMERGENCY MODE';
+            }
+        });
+
+        // ---------- AUTH & USER INFO ----------
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Expanded workers list with all roles (including new services)
+        let workers = JSON.parse(localStorage.getItem('workers')) || [
+            { id: 1, name: 'Raj', email: 'raj@example.com', role: 'Electrician', experience: 3, rate: 200 },
+            { id: 2, name: 'Simran', email: 'simran@example.com', role: 'Plumber', experience: 5, rate: 200 },
+            { id: 3, name: 'Amit', email: 'amit@example.com', role: 'AC Mechanic', experience: 4, rate: 250 },
+            { id: 4, name: 'Vikram', email: 'vikram@example.com', role: 'Bike Mechanic', experience: 6, rate: 180 },
+            { id: 5, name: 'John', email: 'john@example.com', role: 'Carpenter', experience: 7, rate: 220 },
+            { id: 6, name: 'Geeta', email: 'geeta@example.com', role: 'House Cleaning', experience: 2, rate: 150 },
+            { id: 7, name: 'Ravi', email: 'ravi@example.com', role: 'Painter', experience: 5, rate: 210 },
+            { id: 8, name: 'Karan', email: 'karan@example.com', role: 'Refrigerator Repair', experience: 4, rate: 230 },
+            { id: 9, name: 'Priya', email: 'priya@example.com', role: 'Washing Machine Repair', experience: 3, rate: 200 },
+            { id: 10, name: 'Suresh', email: 'suresh@example.com', role: 'RO Water Purifier Service', experience: 4, rate: 190 },
+            // NEW WORKERS FOR ADDED SERVICES
+            { id: 11, name: 'Anita', email: 'anita@example.com', role: 'Tutor', experience: 5, rate: 300 },
+            { id: 12, name: 'Sanjay', email: 'sanjay@example.com', role: 'Chef', experience: 8, rate: 400 },
+            { id: 13, name: 'Hari', email: 'hari@example.com', role: 'Gardener', experience: 6, rate: 180 },
+            { id: 14, name: 'Manoj', email: 'manoj@example.com', role: 'Acting Driver', experience: 4, rate: 250 },
+            { id: 15, name: 'Kavita', email: 'kavita@example.com', role: 'Masseur', experience: 3, rate: 350 },
+            { id: 16, name: 'Pooja', email: 'pooja@example.com', role: 'Beautician', experience: 4, rate: 280 },
+            { id: 17, name: 'Deepak', email: 'deepak@example.com', role: 'Delivery Partner', experience: 2, rate: 150 },
+            { id: 18, name: 'Gopal', email: 'gopal@example.com', role: 'Load Man', experience: 3, rate: 160 }
+        ];
+        localStorage.setItem('workers', JSON.stringify(workers));
+
+        // Find logged in worker
+        const loggedInWorker = workers.find(w => w.email === currentUser.email);
+        document.getElementById('userName').innerText = loggedInWorker?.name || currentUser.email;
+        document.getElementById('userEmail').innerText = loggedInWorker ? `(${currentUser.email})` : '';
+
+        // ---------- SERVICES DATA (expanded: 18 services) ----------
+        const services = [
+            { id: 1, name: 'Plumber', icon: 'fa-solid fa-wrench', desc: 'Tap repair, pipe leakage, bathroom fitting.' },
+            { id: 2, name: 'Electrician', icon: 'fa-solid fa-bolt', desc: 'Wiring, switchboard, circuit breaker.' },
+            { id: 3, name: 'AC Mechanic', icon: 'fa-regular fa-snowflake', desc: 'Gas refill, cooling issues, split AC.' },
+            { id: 4, name: 'Bike Mechanic', icon: 'fa-solid fa-motorcycle', desc: 'Engine check, puncture, maintenance.' },
+            { id: 5, name: 'Carpenter', icon: 'fa-solid fa-hammer', desc: 'Furniture repair, door/window fitting.' },
+            { id: 6, name: 'House Cleaning', icon: 'fa-solid fa-broom', desc: 'Deep cleaning, kitchen & bathroom.' },
+            { id: 7, name: 'Painter', icon: 'fa-solid fa-paint-roller', desc: 'Wall painting, texture, putty.' },
+            { id: 8, name: 'Refrigerator Repair', icon: 'fa-solid fa-temperature-low', desc: 'Cooling issues, gas leak.' },
+            { id: 9, name: 'Washing Machine Repair', icon: 'fa-solid fa-soap', desc: 'Not spinning, leakage, drain.' },
+            { id: 10, name: 'RO Water Purifier', icon: 'fa-solid fa-droplet', desc: 'Filter change, tank cleaning.' },
+            // NEW SERVICES
+            { id: 11, name: 'Tutor', icon: 'fa-solid fa-chalkboard-user', desc: 'Home tutoring for all subjects.' },
+            { id: 12, name: 'Chef', icon: 'fa-solid fa-utensils', desc: 'Private chef for events or daily meals.' },
+            { id: 13, name: 'Gardener', icon: 'fa-solid fa-leaf', desc: 'Lawn mowing, plant care, landscaping.' },
+            { id: 14, name: 'Acting Driver', icon: 'fa-solid fa-car', desc: 'Professional driver for your vehicle.' },
+            { id: 15, name: 'Masseur', icon: 'fa-solid fa-hand-sparkles', desc: 'Therapeutic massage at home.' },
+            { id: 16, name: 'Beautician', icon: 'fa-solid fa-spa', desc: 'Salon services: facial, waxing, makeup.' },
+            { id: 17, name: 'Delivery Partner', icon: 'fa-solid fa-truck', desc: 'Parcel pickup and dropoff.' },
+            { id: 18, name: 'Load Man', icon: 'fa-solid fa-dolly', desc: 'Loading/unloading, shifting help.' }
+        ];
+
+        // Render service grid (first 9 visible, rest hidden initially)
+        const grid = document.getElementById('servicesGrid');
+        function renderServices(showAll = false) {
+            grid.innerHTML = '';
+            services.forEach((s, idx) => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                // Show first 9 by default (adjust as needed)
+                if (idx >= 9) {
+                    card.classList.add('extra-service');
+                    if (!showAll) card.classList.add('hidden-service');
+                }
+                card.innerHTML = `
+                    <div class="icon-wrapper"><i class="${s.icon}"></i></div>
+                    <div class="service-name">${s.name}</div>
+                    <div class="service-desc">${s.desc}</div>
+                    <button class="book-now-btn" data-service="${s.name}"><i class="fa-regular fa-calendar-plus"></i> Book Now</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        renderServices(false);
+
+        // Toggle more/less services
+        const toggleBtn = document.getElementById('toggleMoreBtn');
+        let showingAll = false;
+        toggleBtn.addEventListener('click', () => {
+            showingAll = !showingAll;
+            document.querySelectorAll('.extra-service').forEach(c => c.classList.toggle('hidden-service', !showingAll));
+            toggleBtn.innerHTML = showingAll ?
+                '<i class="fa-regular fa-circle-minus"></i> Show fewer services <i class="fa-regular fa-arrow-up"></i>' :
+                '<i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i>';
+        });
+
+        // ---------- FILTER WORKERS BY ROLE (based on service click) ----------
+        const workersDiv = document.getElementById('workersList');
+        const filterHint = document.getElementById('filterHint');
+
+        function displayWorkers(roleFilter = null) {
+            let filtered = workers;
+            let hintText = '';
+            if (roleFilter) {
+                const lowerRole = roleFilter.trim().toLowerCase();
+                // Try to match role exactly or partially (e.g., "AC Mechanic" matches "AC Mechanic")
+                filtered = workers.filter(w => w.role.toLowerCase().includes(lowerRole) || w.role.toLowerCase() === lowerRole);
+                hintText = `Showing workers for <strong>${roleFilter}</strong> `;
+                if (filtered.length === 0) hintText += ' (none available)';
+            } else {
+                hintText = 'All available workers';
+            }
+            filterHint.innerHTML = hintText;
+
+            if (filtered.length === 0) {
+                workersDiv.innerHTML = '<p style="padding:1rem;">No workers found for this service.</p>';
+                return;
+            }
+
+            workersDiv.innerHTML = filtered.map(w => `
+                <div class="worker-card">
+                    <strong>${w.name}</strong> - ${w.role} (${w.experience} yrs)<br>
+                    Rate: ₹${w.rate}/hr<br>
+                    <button onclick="bookWorker(${w.id})">Book</button>
+                </div>
+            `).join('');
+        }
+
+        // Initial: show all workers
+        displayWorkers();
+
+        // Attach service book buttons click via delegation
+        document.getElementById('servicesGrid').addEventListener('click', (e) => {
+            const btn = e.target.closest('.book-now-btn');
+            if (!btn) return;
+            const serviceName = btn.dataset.service;
+            displayWorkers(serviceName);
+            document.querySelector('.left-col').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // ---------- EXISTING BOOKINGS / PAYMENTS / FEEDBACK CODE (preserved) ----------
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
+        const payments = JSON.parse(localStorage.getItem('payments') || '[]').filter(p => p.userId === currentUser.email);
+        const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+
+        function getPaymentForBooking(bookingId) {
+            return payments.find(p => p.bookingId === bookingId);
+        }
+
+        function feedbackExists(bookingId) {
+            return feedbacks.some(f => f.bookingId === bookingId);
+        }
+
+        // --- COMPLETED JOBS ---
+        const completedJobsDiv = document.getElementById('completedJobs');
+        const completedBookings = bookings.filter(b => b.status === 'completed');
+
+        if (completedBookings.length === 0) {
+            completedJobsDiv.innerHTML = '<p style="padding:1rem;">No completed jobs yet.</p>';
+        } else {
+            completedJobsDiv.innerHTML = completedBookings.map(b => {
+                const worker = workers.find(w => w.id === b.workerId);
+                const payment = getPaymentForBooking(b.id);
+                const alreadyFeedback = feedbackExists(b.id);
+
+                let actionsHtml = '';
+
+                if (payment) {
+                    if (payment.status === 'pending') {
+                        actionsHtml += `
+                            <div style="margin:10px 0;">
+                                <p><strong>Payment required:</strong> ₹${payment.amount}</p>
+                                <button class="pay-btn" data-paymentid="${payment.id}" data-bookingid="${b.id}">💰 Pay Now</button>
+                            </div>
+                        `;
+                    } else if (payment.status === 'paid_by_user') {
+                        actionsHtml += `<p><span class="badge badge-paid">Payment completed (awaiting admin release)</span></p>`;
+                    } else if (payment.status === 'approved') {
+                        actionsHtml += `<p><span class="badge badge-paid">Payment released to worker</span></p>`;
+                    }
+                } else {
+                    actionsHtml += `<p>No payment record found.</p>`;
+                }
+
+                if (!alreadyFeedback) {
+                    actionsHtml += `
+                        <div class="feedback-form" id="feedback-${b.id}">
+                            <p><strong>Leave feedback for ${worker ? worker.name : 'worker'}:</strong></p>
+                            <select id="rating-${b.id}" class="rating-select">
+                                <option value="5">5 - Excellent</option>
+                                <option value="4">4 - Good</option>
+                                <option value="3">3 - Average</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="1">1 - Terrible</option>
+                            </select>
+                            <textarea id="comment-${b.id}" placeholder="Write your feedback (optional)" rows="2"></textarea>
+                            <button class="feedback-btn" data-bookingid="${b.id}">⭐ Submit Feedback</button>
+                        </div>
+                    `;
+                } else {
+                    actionsHtml += `<p><span class="badge badge-completed">Feedback already submitted</span></p>`;
+                }
+
+                return `
+                    <div class="booking-card" id="booking-${b.id}">
+                        <strong>Job ID:</strong> ${b.id}<br>
+                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId} ${worker ? '('+worker.role+')' : ''}<br>
+                        <strong>Completed on:</strong> ${b.updatedAt ? new Date(b.updatedAt).toLocaleDateString() : 'recently'}<br>
+                        ${actionsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Attach payment button listeners
+            document.querySelectorAll('.pay-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const paymentId = parseInt(this.dataset.paymentid);
+                    const bookingId = parseInt(this.dataset.bookingid);
+                    let payments = JSON.parse(localStorage.getItem('payments') || '[]');
+                    const index = payments.findIndex(p => p.id === paymentId);
+                    if (index !== -1 && payments[index].status === 'pending') {
+                        payments[index].status = 'paid_by_user';
+                        localStorage.setItem('payments', JSON.stringify(payments));
+                        alert('Payment successful! Waiting for admin release.');
+                        window.location.reload();
+                    } else {
+                        alert('Payment already processed.');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.feedback-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const bookingId = parseInt(this.dataset.bookingid);
+                    const rating = document.getElementById(`rating-${bookingId}`).value;
+                    const comment = document.getElementById(`comment-${bookingId}`).value;
+                    const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+                    if (feedbacks.some(f => f.bookingId === bookingId)) {
+                        alert('Feedback already submitted for this job.');
+                        return;
+                    }
+                    feedbacks.push({
+                        id: Date.now(),
+                        bookingId: bookingId,
+                        userId: currentUser.email,
+                        rating: parseInt(rating),
+                        comment: comment,
+                        date: new Date().toISOString()
+                    });
+                    localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+                    alert('Feedback submitted. Thank you!');
+                    window.location.reload();
+                });
+            });
+        }
+
+        // --- MY BOOKINGS ---
+        const bookingsDiv = document.getElementById('bookingsList');
+        if (bookings.length === 0) {
+            bookingsDiv.innerHTML = '<p>No bookings yet.</p>';
+        } else {
+            bookingsDiv.innerHTML = bookings.map(b => {
+                const worker = workers.find(w => w.id === b.workerId);
+                let statusClass = '';
+                if (b.status === 'pending') statusClass = 'badge-pending';
+                else if (b.status === 'completed') statusClass = 'badge-completed';
+                else if (b.status === 'in_progress') statusClass = 'badge-paid';
+                let action = '';
+                if (b.status === 'accepted' || b.status === 'on_the_way' || b.status === 'near' || b.status === 'arrived') {
+                    action = `<a href="track.html?bookingId=${b.id}"><button>Track</button></a>`;
+                }
+                let otpButton = '';
+                let otpDisplay = '';
+                if (b.status === 'arrived') {
+                    if (!b.otp) {
+                        otpButton = `<button onclick="generateOtp(${b.id})">Generate OTP</button>`;
+                    } else {
+                        otpDisplay = `<p><strong>OTP:</strong> ${b.otp}</p>`;
+                    }
+                }
+                return `
+                    <div class="booking-card">
+                        <strong>ID:</strong> ${b.id}<br>
+                        <strong>Worker:</strong> ${worker ? worker.name : b.workerId}<br>
+                        <strong>Status:</strong> <span class="badge ${statusClass}">${b.status}</span><br>
+                        ${otpDisplay}
+                        ${action} ${otpButton}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ---------- GLOBAL FUNCTIONS ----------
+        window.bookWorker = function(workerId) {
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const newBooking = {
+                id: Date.now(),
+                userId: currentUser.email,
+                workerId: workerId,
+                status: 'pending',
+                rate: 200,
+                createdAt: new Date().toISOString()
+            };
+            bookings.push(newBooking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            alert('Booking sent to worker!');
+            window.location.reload();
+        };
+
+        window.generateOtp = function(bookingId) {
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const index = bookings.findIndex(b => b.id === bookingId);
+            if (index !== -1 && bookings[index].status === 'arrived') {
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                bookings[index].otp = otp;
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                alert(`OTP generated: ${otp}. Share this with the worker.`);
+                window.location.reload();
+            }
+        };
+
+        window.logout = function() {
+            localStorage.removeItem('currentUser');
+            window.location.href = '../index.html';
+        };
+    })();
+</script>
+</body>
+</html>
