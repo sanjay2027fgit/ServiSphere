@@ -19,7 +19,6 @@
             min-height: 100vh;
         }
 
-        /* glass background overlay */
         .glass-panel {
             background: rgba(18, 22, 28, 0.75);
             backdrop-filter: blur(12px);
@@ -86,7 +85,6 @@
             border-color: #f7dc6f;
         }
 
-        /* earnings premium card */
         .earnings-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -130,10 +128,9 @@
             margin-top: 8px;
         }
 
-        /* dashboard grid */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
             gap: 30px;
             margin-top: 25px;
         }
@@ -266,22 +263,22 @@
             <h3>🛠️ WORKERS</h3>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Email</th><th>Role</th><th>Experience</th></tr></thead>
+                    <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Experience</th></tr></thead>
                     <tbody id="workersBody"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Bookings -->
+        <!-- Bookings (updated with location and worker name) -->
         <div class="data-card">
             <h3>📋 BOOKINGS</h3>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>User</th><th>Worker</th><th>Status</th><th>Date</th></tr></thead>
+                    <thead><tr><th>ID</th><th>User</th><th>Worker</th><th>Status</th><th>Date</th><th>Location</th></tr></thead>
                     <tbody id="bookingsBody"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Payments -->
+        <!-- Payments (updated with worker name) -->
         <div class="data-card">
             <h3>💰 PAYMENTS</h3>
             <div class="table-wrapper">
@@ -331,17 +328,32 @@
                 return m;
             });
 
-            // ---- EARNINGS CALCULATIONS ----
+            // Helper: get worker name by ID (fallback to ID)
+            function getWorkerName(workerId) {
+                if (!workerId) return '—';
+                const worker = workers.find(w => w.id == workerId || w.id === workerId);
+                return worker ? worker.name || worker.email : workerId;
+            }
+
+            // Helper: format location from booking.location
+            function formatLocation(loc) {
+                if (!loc) return '—';
+                if (typeof loc === 'string') return escape(loc);
+                if (loc.address) return escape(loc.address);
+                if (loc.lat && loc.lng) return `${loc.lat}, ${loc.lng}`;
+                return '—';
+            }
+
+            // ---- EARNINGS CALCULATIONS - FIXED: convert amounts to numbers ----
             let totalRevenue = 0;
             let pendingPayouts = 0;      // paid_by_user (user paid, waiting for special admin)
             let completedPayouts = 0;     // approved (released to worker)
 
             payments.forEach(p => {
-                if (p.amount) {
-                    totalRevenue += p.amount;
-                    if (p.status === 'paid_by_user') pendingPayouts += p.amount;
-                    if (p.status === 'approved') completedPayouts += p.amount;
-                }
+                const amt = Number(p.amount) || 0;  // ensure numeric
+                totalRevenue += amt;
+                if (p.status === 'paid_by_user') pendingPayouts += amt;
+                if (p.status === 'approved') completedPayouts += amt;
             });
 
             document.getElementById('totalRevenue').innerText = `₹${totalRevenue}`;
@@ -354,42 +366,48 @@
                 ? users.map(u => `<tr><td>${escape(u.email)}</td></tr>`).join('')
                 : '<tr><td class="empty-msg">No users</td></tr>';
 
-            // ---- WORKERS TABLE ----
+            // ---- WORKERS TABLE (added name column) ----
             const workersBody = document.getElementById('workersBody');
             workersBody.innerHTML = workers.length
-                ? workers.map(w => `<tr><td>${escape(w.email)}</td><td>${escape(w.role)}</td><td>${escape(w.experience)} yrs</td></tr>`).join('')
-                : '<tr><td colspan="3" class="empty-msg">No workers</td></tr>';
+                ? workers.map(w => `<tr><td>${escape(w.email)}</td><td>${escape(w.name || '—')}</td><td>${escape(w.role)}</td><td>${escape(w.experience)} yrs</td></tr>`).join('')
+                : '<tr><td colspan="4" class="empty-msg">No workers</td></tr>';
 
-            // ---- BOOKINGS TABLE ----
+            // ---- BOOKINGS TABLE (with worker name and location) ----
             const bookingsBody = document.getElementById('bookingsBody');
             if (bookings.length === 0) {
-                bookingsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No bookings</td></tr>';
+                bookingsBody.innerHTML = '<tr><td colspan="6" class="empty-msg">No bookings</td></tr>';
             } else {
-                bookingsBody.innerHTML = bookings.map(b => `
+                bookingsBody.innerHTML = bookings.map(b => {
+                    const workerName = getWorkerName(b.workerId);
+                    const locationStr = formatLocation(b.location);
+                    return `
                     <tr>
                         <td>${b.id}</td>
                         <td>${escape(b.userId)}</td>
-                        <td>${b.workerId}</td>
+                        <td>${escape(workerName)}</td>
                         <td><span class="badge">${escape(b.status)}</span></td>
                         <td>${b.createdAt ? b.createdAt.slice(0,10) : '—'}</td>
+                        <td>${locationStr}</td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
 
-            // ---- PAYMENTS TABLE ----
+            // ---- PAYMENTS TABLE (with worker name) ----
             const paymentsBody = document.getElementById('paymentsBody');
             if (payments.length === 0) {
                 paymentsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">No payments</td></tr>';
             } else {
-                paymentsBody.innerHTML = payments.map(p => `
+                paymentsBody.innerHTML = payments.map(p => {
+                    const workerName = getWorkerName(p.workerId);
+                    return `
                     <tr>
                         <td>${p.id}</td>
                         <td>${p.bookingId}</td>
-                        <td>${p.workerId}</td>
-                        <td>₹${p.amount}</td>
+                        <td>${escape(workerName)}</td>
+                        <td>₹${Number(p.amount) || 0}</td>
                         <td><span class="badge">${escape(p.status)}</span></td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
 
             // ---- FEEDBACK TABLE ----
@@ -397,14 +415,15 @@
             if (feedbacks.length === 0) {
                 feedbackBody.innerHTML = '<tr><td colspan="4" class="empty-msg">No feedback</td></tr>';
             } else {
-                feedbackBody.innerHTML = feedbacks.map(f => `
+                feedbackBody.innerHTML = feedbacks.map(f => {
+                    return `
                     <tr>
                         <td>${f.bookingId}</td>
                         <td>${escape(f.userId)}</td>
                         <td>${f.rating}/5</td>
                         <td>“${escape(f.comment).substring(0,40)}${f.comment && f.comment.length>40 ? '…' : ''}”</td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
 
             // Timestamp
