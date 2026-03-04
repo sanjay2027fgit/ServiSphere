@@ -110,7 +110,7 @@
             background: #0066cc;
         }
 
-        /* Base styles (unchanged from your premium theme) */
+        /* Base styles */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: radial-gradient(circle at 80% 10%, #2b2b20, #0a0a0f 90%);
@@ -233,7 +233,7 @@
             display: block;
         }
 
-        /* Services grid (same as before) */
+        /* Services grid */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -338,19 +338,8 @@
             box-shadow: 0 0 30px #ffbf00;
         }
 
-        /* Dashboard layout with right column */
-        .main-with-side {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .left-panel {
-            min-width: 0;
-        }
-
-        .right-panel .card {
+        /* Cards */
+        .card {
             background: rgba(18, 18, 24, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(212, 175, 55, 0.4);
@@ -505,12 +494,6 @@
             50% { border-color: rgba(255, 215, 0, 0.9); box-shadow: 0 0 30px #ffd70040; }
             100% { border-color: rgba(212, 175, 55, 0.4); }
         }
-
-        @media (max-width: 900px) {
-            .main-with-side {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -529,43 +512,33 @@
         </div>
     </div>
 
-    <!-- Tabs navigation -->
+    <!-- Tabs navigation (now four tabs) -->
     <div class="tabs">
         <button class="tab-btn active" id="tabServices"><i class="fa-regular fa-grid-2"></i> Services</button>
         <button class="tab-btn" id="tabWorkers"><i class="fa-solid fa-briefcase"></i> Workers</button>
         <button class="tab-btn" id="tabBookings"><i class="fa-regular fa-calendar"></i> My Bookings</button>
+        <button class="tab-btn" id="tabCompleted"><i class="fa-solid fa-circle-check"></i> Completed Jobs</button>
     </div>
 
-    <!-- Main area with left panel (tab content) and right panel (completed jobs) -->
-    <div class="main-with-side">
-        <div class="left-panel">
-            <!-- Services Tab -->
-            <div id="servicesTab" class="tab-content active">
-                <div class="services-grid" id="servicesGrid"></div>
-                <div class="more-btn-container">
-                    <button class="more-btn" id="toggleMoreBtn"><i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Workers Tab -->
-            <div id="workersTab" class="tab-content">
-                <div id="filterHint" class="filter-hint"></div>
-                <div id="workersList"></div>
-            </div>
-
-            <!-- My Bookings Tab -->
-            <div id="bookingsTab" class="tab-content">
-                <div id="bookingsList"></div>
-            </div>
+    <!-- Tab contents -->
+    <div id="servicesTab" class="tab-content active">
+        <div class="services-grid" id="servicesGrid"></div>
+        <div class="more-btn-container">
+            <button class="more-btn" id="toggleMoreBtn"><i class="fa-regular fa-circle-plus"></i> More Services <i class="fa-regular fa-arrow-right"></i></button>
         </div>
+    </div>
 
-        <!-- Right panel: Completed Jobs (always visible) -->
-        <div class="right-panel">
-            <div class="card">
-                <h3>✅ Completed Jobs – Action Required</h3>
-                <div id="completedJobs"></div>
-            </div>
-        </div>
+    <div id="workersTab" class="tab-content">
+        <div id="filterHint" class="filter-hint"></div>
+        <div id="workersList"></div>
+    </div>
+
+    <div id="bookingsTab" class="tab-content">
+        <div id="bookingsList"></div>
+    </div>
+
+    <div id="completedTab" class="tab-content">
+        <div id="completedJobs"></div>
     </div>
 </div>
 
@@ -642,13 +615,15 @@
         const tabServices = document.getElementById('tabServices');
         const tabWorkers = document.getElementById('tabWorkers');
         const tabBookings = document.getElementById('tabBookings');
+        const tabCompleted = document.getElementById('tabCompleted');
         const servicesTab = document.getElementById('servicesTab');
         const workersTab = document.getElementById('workersTab');
         const bookingsTab = document.getElementById('bookingsTab');
+        const completedTab = document.getElementById('completedTab');
 
         function setActiveTab(tabId) {
-            [tabServices, tabWorkers, tabBookings].forEach(btn => btn.classList.remove('active'));
-            [servicesTab, workersTab, bookingsTab].forEach(tab => tab.classList.remove('active'));
+            [tabServices, tabWorkers, tabBookings, tabCompleted].forEach(btn => btn.classList.remove('active'));
+            [servicesTab, workersTab, bookingsTab, completedTab].forEach(tab => tab.classList.remove('active'));
 
             if (tabId === 'services') {
                 tabServices.classList.add('active');
@@ -662,12 +637,17 @@
                 tabBookings.classList.add('active');
                 bookingsTab.classList.add('active');
                 renderBookingsTab();
+            } else if (tabId === 'completed') {
+                tabCompleted.classList.add('active');
+                completedTab.classList.add('active');
+                renderCompletedJobs();
             }
         }
 
         tabServices.addEventListener('click', () => setActiveTab('services'));
         tabWorkers.addEventListener('click', () => setActiveTab('workers'));
         tabBookings.addEventListener('click', () => setActiveTab('bookings'));
+        tabCompleted.addEventListener('click', () => setActiveTab('completed'));
 
         // ---------- SERVICES TAB RENDERING ----------
         function renderServicesTab() {
@@ -794,7 +774,7 @@
             }).join('');
         }
 
-        // ---------- COMPLETED JOBS (right panel) – unchanged from original ----------
+        // ---------- COMPLETED JOBS TAB RENDERING ----------
         function renderCompletedJobs() {
             const completedDiv = document.getElementById('completedJobs');
             const bookings = JSON.parse(localStorage.getItem('bookings') || '[]').filter(b => b.userId === currentUser.email);
@@ -917,9 +897,6 @@
         renderWorkersTab(); // show all workers initially
         renderBookingsTab();
         renderCompletedJobs();
-
-        // Also re-render completed jobs when anything changes (e.g., after payment)
-        // But we can keep it simple; page reloads handle updates.
 
         // ---------- GLOBAL FUNCTIONS (OTP, logout) ----------
         window.generateOtp = function(bookingId) {
